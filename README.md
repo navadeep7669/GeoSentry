@@ -1,1 +1,203 @@
-# GEOSENTRY
+﻿# Landslide Early Warning Platform 🏔️
+
+AI-powered backend for landslide detection, risk scoring, and multi-channel emergency alerts.
+
+## Architecture
+
+```
+Citizen → POST /reports (photo + GPS)
+            ↓
+Validator → PATCH /reports/{id} (approve/reject)
+            ↓
+Celery Task: weather API + soil/slope lookup + XGBoost → risk score (0-100)
+            ↓
+Authority → GET /risk-zones (PostGIS spatial) → POST /alerts
+            ↓
+         Twilio SMS + Firebase FCM push → Citizens in geofence
+```
+
+## Stack
+
+| Layer | Technology |
+|---|---|
+| API | FastAPI + Uvicorn |
+| ORM | SQLAlchemy 2.0 (async) + Alembic |
+| Spatial DB | PostgreSQL 16 + PostGIS 3.4 (GeoAlchemy2) |
+| Queue | Celery 5 + Redis 7 |
+| ML | XGBoost + scikit-learn + joblib |
+| Storage | boto3 → MinIO / AWS S3 |
+| SMS | Twilio Python SDK |
+| Push | Firebase Admin SDK (FCM) |
+| Weather | httpx → OpenWeatherMap |
+| Auth | python-jose (JWT) + passlib (bcrypt) |
+
+## Quick Start
+
+### 1. Start Infrastructure
+
+```bash
+docker-compose up -d
+```
+
+This starts PostgreSQL + PostGIS, Redis, and MinIO.
+
+### 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment
+
+```bash
+cp .env.example .env
+# Edit .env with your API keys (OpenWeatherMap, Twilio, Firebase)
+```
+
+### 4. Run Migrations
+
+```bash
+alembic upgrade head
+```
+
+### 5. Train the ML Model
+
+```bash
+python -m app.ml.trainer
+# Outputs: app/ml/model.pkl
+```
+
+### 6. Start the API
+
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 7. Start Celery Workers
+
+```bash
+# Risk computation worker
+celery -A app.tasks.celery_app worker -Q risk -c 4 --loglevel=info
+
+# Alert dispatch worker
+celery -A app.tasks.celery_app worker -Q alerts -c 2 --loglevel=info
+```
+
+## API Reference
+
+Interactive docs at: **http://localhost:8000/docs**
+
+### Authentication
+
+| Method | Endpoint | Role | Description |
+|--------|----------|------|-------------|
+| POST | `/auth/register` | Public | Register (citizen\|validator\|authority) |
+| POST | `/auth/login` | Public | Get JWT token |
+
+### Reports
+
+| Method | Endpoint | Role | Description |
+|--------|----------|------|-------------|
+| POST | `/reports` | Citizen+ | Submit geo-tagged report + media |
+| GET | `/reports` | Citizen+ | List reports (citizens see own only) |
+| GET | `/reports/{id}` | Citizen+ | Get single report |
+| PATCH | `/reports/{id}` | Validator+ | Approve/reject → triggers risk ML task |
+
+### Risk Zones
+
+| Method | Endpoint | Role | Description |
+|--------|----------|------|-------------|
+| GET | `/risk-zones` | Citizen+ | Spatial query (bbox or radius) |
+| GET | `/risk-zones/{id}` | Citizen+ | Single zone with GeoJSON boundary |
+
+**Spatial filters:**
+```
+GET /risk-zones?bbox=73.5,18.5,74.0,19.0          # bounding box
+GET /risk-zones?lat=18.52&lon=73.85&radius_km=5    # radius
+GET /risk-zones?lat=18.52&lon=73.85&radius_km=5&min_risk=High
+```
+
+### Alerts
+
+| Method | Endpoint | Role | Description |
+|--------|----------|------|-------------|
+| POST | `/alerts` | Authority | Dispatch SMS + push to geofenced users |
+| GET | `/alerts` | Authority | List own alerts |
+| GET | `/alerts/{id}` | Authority | Alert status + delivery counts |
+
+**Example alert payload:**
+```json
+{
+  "zone_id": 3,
+  "message": "CRITICAL: Landslide risk in Sector 7. Evacuate immediately.",
+  "channel": "both",
+  "target_roles": ["citizen"],
+  "geofence_wkt": "POLYGON((73.8 18.5, 74.0 18.5, 74.0 18.7, 73.8 18.7, 73.8 18.5))"
+}
+```
+
+## Risk Score Model
+
+**Features used:**
+
+| Feature | Source |
+|---|---|
+| `rainfall_mm` | OpenWeatherMap forecast API |
+| `humidity_pct` | OpenWeatherMap current weather |
+| `slope_deg` | soil_data table / CSV lookup |
+| `elevation_m` | Report field (citizen input) |
+| `soil_saturation` | soil_data table |
+| `ndvi` | soil_data table (vegetation index) |
+| `distance_to_water_km` | soil_data table |
+| `prev_events_30d` | PostGIS count of nearby validated reports |
+
+**Risk levels:**
+- 0–24: 🟢 Low
+- 25–49: 🟡 Moderate
+- 50–74: 🟠 High
+- 75–100: 🔴 Critical
+
+## Project Structure
+
+```
+app/
+├── main.py              # FastAPI app + lifespan
+├── config.py            # Pydantic settings
+├── database.py          # Async SQLAlchemy engine
+├── dependencies.py      # JWT auth + role guards
+├── models/              # SQLAlchemy ORM (PostGIS)
+├── schemas/             # Pydantic request/response
+├── routers/             # FastAPI route handlers
+├── services/            # Business logic
+│   ├── auth_service.py
+│   ├── storage_service.py  (boto3)
+│   ├── weather_service.py  (httpx)
+│   ├── ml_service.py       (XGBoost)
+│   ├── sms_service.py      (Twilio)
+│   └── push_service.py     (Firebase)
+├── tasks/               # Celery workers
+│   ├── celery_app.py
+│   ├── risk_tasks.py       (recompute_risk)
+│   └── alert_tasks.py      (dispatch_alert)
+└── ml/
+    ├── trainer.py          (XGBoost training)
+    ├── predictor.py        (inference wrapper)
+    ├── soil_data.csv       (ground truth reference)
+    └── model.pkl           (generated by trainer)
+```
+
+## Running Tests
+
+```bash
+pytest tests/ -v
+```
+
+Unit tests run without a real database (ML heuristic tests, auth validation, endpoint auth guards).
+
+## Production Notes
+
+- Replace MinIO with real S3: unset `STORAGE_ENDPOINT_URL`
+- Firebase: download `firebase_credentials.json` from Firebase Console → Project Settings
+- Twilio: verify your `TWILIO_FROM_NUMBER` in Twilio console
+- Scale Celery workers horizontally; separate `risk` and `alerts` queues
+- Add `alembic upgrade head` to your deployment pipeline
