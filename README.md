@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿# Landslide Early Warning Platform 🏔️
 AI-powered backend for landslide detection, risk scoring, and multi-channel emergency alerts.
 
@@ -200,3 +201,6 @@ Unit tests run without a real database (ML heuristic tests, auth validation, end
 - Twilio: verify your `TWILIO_FROM_NUMBER` in Twilio console
 - Scale Celery workers horizontally; separate `risk` and `alerts` queues
 - Add `alembic upgrade head` to your deployment pipeline
+=======
+# GeoSentry
+>>>>>>> 68b67587589bfa142135f336440d30c0c7197450
