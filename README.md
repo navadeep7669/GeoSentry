@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+ HEAD
 ﻿# Landslide Early Warning Platform 🏔️
 AI-powered backend for landslide detection, risk scoring, and multi-channel emergency alerts.
 
