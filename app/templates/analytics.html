@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSentry — Analytics, Trends & Regional Risk Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/offline_sync.js"></script>
+  <style>
+    @keyframes levitate {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-7px) rotate(1.5deg);
+        filter: drop-shadow(0 12px 14px rgba(16, 185, 129, 0.25));
+      }
+    }
+    @keyframes levitate-alt {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-8px) rotate(-2deg);
+        filter: drop-shadow(0 12px 14px rgba(6, 182, 212, 0.25));
+      }
+    }
+    @keyframes levitate-slow {
+      0%, 100% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-10px);
+        filter: drop-shadow(0 14px 18px rgba(244, 63, 94, 0.25));
+      }
+    }
+    .levitate {
+      animation: levitate 3.6s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-alt {
+      animation: levitate-alt 4.2s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-slow {
+      animation: levitate-slow 4.8s ease-in-out infinite;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-lg">
+    <div class="flex items-center space-x-3">
+      <a href="/" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white text-xl group-hover:scale-105 transition levitate">
+          <i class="fa-solid fa-mountain-sun"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400" data-i18n="nav.brand">GeoSentry</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30 font-medium">v1.0.0</span>
+            <span id="network-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Online Synced
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block" data-i18n="nav.tagline">AI Landslide Early Warning & Emergency Risk Prioritization</p>
+        </div>
+      </a>
+    </div>
+
+    <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <a href="/" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-house levitate"></i> <span class="hidden md:inline" data-i18n="nav.map">Home & Map</span>
+      </a>
+      <a href="/risk-priority" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-ranking-star text-amber-400 levitate-slow"></i> <span class="hidden md:inline" data-i18n="nav.priority">Priority</span>
+      </a>
+      <a href="/field-reports" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-camera text-teal-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.report">Reports</span>
+      </a>
+      <a href="/risk-evaluation" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-calculator levitate"></i> <span class="hidden md:inline" data-i18n="nav.engine">Risk Engine</span>
+      </a>
+      <a href="/analytics" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-chart-line levitate-alt"></i> <span class="hidden md:inline" data-i18n="nav.analytics">Analytics</span>
+      </a>
+      <a href="/reports-review" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-shield-halved levitate-alt"></i> <span class="hidden md:inline" data-i18n="nav.validator">Validator</span>
+      </a>
+      <a href="/alert-dispatch" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-triangle-exclamation text-rose-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.alerts">Alerts</span>
+      </a>
+    </nav>
+
+    <div class="flex items-center space-x-2">
+      <!-- Language Selector -->
+      <select id="global-lang-selector" onchange="setAppLanguage(this.value)" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="mr">मराठी</option>
+        <option value="ml">മലയാളം</option>
+        <option value="bn">বাংলা</option>
+      </select>
+
+      <a href="/auth/login-page" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-user-shield levitate"></i> <span data-i18n="nav.signin">Stakeholder Sign In</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <a href="/" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-arrow-left"></i> Back to GIS Map
+      </a>
+      <span class="px-3 py-1 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400 font-mono text-xs font-bold">
+        National Analytics & Predictive Trends
+      </span>
+    </div>
+
+    <!-- KPI Overview Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-1">
+        <div class="text-slate-400 text-xs font-semibold flex items-center justify-between">
+          <span>Monitored Corridors</span>
+          <i class="fa-solid fa-mountain text-emerald-400"></i>
+        </div>
+        <div class="text-3xl font-black text-slate-100 font-mono">14</div>
+        <p class="text-[11px] text-slate-400">Western Ghats, Himalayan Arc & NE Hills</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-1">
+        <div class="text-slate-400 text-xs font-semibold flex items-center justify-between">
+          <span>Critical Risk Hotspots</span>
+          <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+        </div>
+        <div class="text-3xl font-black text-rose-400 font-mono">7 <span class="text-xs font-normal text-slate-500">/ 14</span></div>
+        <p class="text-[11px] text-slate-400">Priority Score &ge; 76 requiring immediate monitoring</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-1">
+        <div class="text-slate-400 text-xs font-semibold flex items-center justify-between">
+          <span>Verified Field Reports</span>
+          <i class="fa-solid fa-shield-check text-cyan-400"></i>
+        </div>
+        <div class="text-3xl font-black text-cyan-400 font-mono">18</div>
+        <p class="text-[11px] text-slate-400">Ground truth verified by GSI / Field Verifiers</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-1">
+        <div class="text-slate-400 text-xs font-semibold flex items-center justify-between">
+          <span>Emergency Trauma Beds</span>
+          <i class="fa-solid fa-hospital text-purple-400"></i>
+        </div>
+        <div class="text-3xl font-black text-purple-400 font-mono">920</div>
+        <p class="text-[11px] text-slate-400">Across 11 hill hospital trauma networks</p>
+      </div>
+    </div>
+
+    <!-- 2-Column Analytics: Regional Breakdown & Rainfall vs Risk Correlation -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- Regional Risk Breakdown -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-emerald-400"></i> Regional Landslide Risk Distribution
+          </h3>
+          <span class="text-[11px] text-slate-400 font-mono">14 National Sectors</span>
+        </div>
+
+        <div class="space-y-3.5 text-xs">
+          <div>
+            <div class="flex justify-between font-semibold mb-1">
+              <span class="text-slate-300">Western Ghats (MH, Kerala, Karnataka)</span>
+              <span class="text-rose-400 font-bold font-mono">8 Corridors (62% Critical)</span>
+            </div>
+            <div class="w-full bg-slate-950 rounded-full h-2.5">
+              <div class="bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-600 h-2.5 rounded-full" style="width: 82%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between font-semibold mb-1">
+              <span class="text-slate-300">Himalayan Arc (Uttarakhand, Himachal, J&K)</span>
+              <span class="text-rose-400 font-bold font-mono">5 Corridors (80% Critical)</span>
+            </div>
+            <div class="w-full bg-slate-950 rounded-full h-2.5">
+              <div class="bg-gradient-to-r from-cyan-500 via-amber-500 to-rose-600 h-2.5 rounded-full" style="width: 88%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between font-semibold mb-1">
+              <span class="text-slate-300">Eastern & Northeastern Hills (Sikkim, Meghalaya)</span>
+              <span class="text-amber-400 font-bold font-mono">3 Corridors (66% High)</span>
+            </div>
+            <div class="w-full bg-slate-950 rounded-full h-2.5">
+              <div class="bg-gradient-to-r from-emerald-500 to-amber-500 h-2.5 rounded-full" style="width: 65%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rainfall vs Risk Escalation Response Curve -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-cloud-showers-water text-cyan-400"></i> Rainfall-to-Risk Escalation Thresholds
+          </h3>
+          <span class="text-[11px] text-slate-400 font-mono">Pore Pressure Response</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-950 uppercase font-mono text-slate-400 border-b border-slate-800 text-[11px]">
+              <tr>
+                <th class="p-2.5">24h Rainfall</th>
+                <th class="p-2.5">Soil Saturation</th>
+                <th class="p-2.5">Calibrated Probability</th>
+                <th class="p-2.5">Risk Level</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800 font-mono text-xs">
+              <tr>
+                <td class="p-2.5 text-slate-300">0 - 25 mm</td>
+                <td class="p-2.5 text-slate-400">20% - 40%</td>
+                <td class="p-2.5 text-emerald-400 font-bold">12.5% - 28.0%</td>
+                <td class="p-2.5"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">LOW</span></td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-slate-300">25 - 50 mm</td>
+                <td class="p-2.5 text-slate-400">40% - 60%</td>
+                <td class="p-2.5 text-amber-400 font-bold">35.0% - 58.5%</td>
+                <td class="p-2.5"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-[10px]">MODERATE</span></td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-slate-300">50 - 75 mm</td>
+                <td class="p-2.5 text-slate-400">60% - 75%</td>
+                <td class="p-2.5 text-orange-400 font-bold">65.0% - 84.0%</td>
+                <td class="p-2.5"><span class="px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 font-bold text-[10px]">HIGH</span></td>
+              </tr>
+              <tr class="bg-rose-950/20">
+                <td class="p-2.5 text-rose-300 font-bold">&gt; 75 mm (Critical)</td>
+                <td class="p-2.5 text-rose-400 font-bold">&gt; 75% (Liquefaction)</td>
+                <td class="p-2.5 text-rose-400 font-black">88.5% - 99.4%</td>
+                <td class="p-2.5"><span class="px-2 py-0.5 rounded bg-rose-600/20 text-rose-400 font-bold text-[10px]">CRITICAL</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- National Corridors Ranking Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 flex-wrap gap-2">
+        <div>
+          <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-ranking-star text-amber-400"></i> Top National Landslide Risk Corridors (Ranked by Priority)
+          </h3>
+          <p class="text-xs text-slate-400">Real-time combination of calibrated probability, physical hazard, and exposed human lifelines</p>
+        </div>
+        <a href="/" class="text-xs text-emerald-400 hover:underline font-bold">Inspect on GIS Map &rarr;</a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950 uppercase font-mono text-slate-400 border-b border-slate-800 text-[11px]">
+            <tr>
+              <th class="p-3">Rank</th>
+              <th class="p-3">Corridor & District</th>
+              <th class="p-3">State / Region</th>
+              <th class="p-3">Calibrated Probability</th>
+              <th class="p-3">Slope Gradient</th>
+              <th class="p-3">24h Rainfall</th>
+              <th class="p-3">Response Priority</th>
+              <th class="p-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 font-mono text-xs">
+            <tr class="hover:bg-slate-950/50">
+              <td class="p-3 font-bold text-rose-400">#1</td>
+              <td class="p-3 font-sans font-bold text-slate-100">Wayanad (Meppadi - Chooralmala)</td>
+              <td class="p-3 font-sans text-slate-400">Kerala (Western Ghats)</td>
+              <td class="p-3 text-cyan-400 font-bold">99.85%</td>
+              <td class="p-3 text-amber-400">39.0°</td>
+              <td class="p-3 text-cyan-300">112 mm</td>
+              <td class="p-3 font-bold text-rose-400">94.60 / 100</td>
+              <td class="p-3 text-right font-sans">
+                <a href="/risk-evaluation?lat=11.5478&lon=76.1264" class="px-2.5 py-1 bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white rounded text-[11px] font-bold transition">Inspect</a>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-950/50">
+              <td class="p-3 font-bold text-rose-400">#2</td>
+              <td class="p-3 font-sans font-bold text-slate-100">Kedarnath - Mandakini Valley</td>
+              <td class="p-3 font-sans text-slate-400">Uttarakhand (Himalayas)</td>
+              <td class="p-3 text-cyan-400 font-bold">99.40%</td>
+              <td class="p-3 text-amber-400">44.0°</td>
+              <td class="p-3 text-cyan-300">105 mm</td>
+              <td class="p-3 font-bold text-rose-400">93.80 / 100</td>
+              <td class="p-3 text-right font-sans">
+                <a href="/risk-evaluation?lat=30.7346&lon=79.0669" class="px-2.5 py-1 bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white rounded text-[11px] font-bold transition">Inspect</a>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-950/50">
+              <td class="p-3 font-bold text-rose-400">#3</td>
+              <td class="p-3 font-sans font-bold text-slate-100">Ramban - Banihal (NH-44)</td>
+              <td class="p-3 font-sans text-slate-400">Jammu & Kashmir (Himalayas)</td>
+              <td class="p-3 text-cyan-400 font-bold">99.10%</td>
+              <td class="p-3 text-amber-400">43.0°</td>
+              <td class="p-3 text-cyan-300">84 mm</td>
+              <td class="p-3 font-bold text-rose-400">92.10 / 100</td>
+              <td class="p-3 text-right font-sans">
+                <a href="/risk-evaluation?lat=33.2428&lon=75.1950" class="px-2.5 py-1 bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white rounded text-[11px] font-bold transition">Inspect</a>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-950/50">
+              <td class="p-3 font-bold text-rose-400">#4</td>
+              <td class="p-3 font-sans font-bold text-slate-100">Joshimath - Chamoli Sector</td>
+              <td class="p-3 font-sans text-slate-400">Uttarakhand (Himalayas)</td>
+              <td class="p-3 text-cyan-400 font-bold">98.90%</td>
+              <td class="p-3 text-amber-400">37.0°</td>
+              <td class="p-3 text-cyan-300">78 mm</td>
+              <td class="p-3 font-bold text-rose-400">91.20 / 100</td>
+              <td class="p-3 text-right font-sans">
+                <a href="/risk-evaluation?lat=30.5564&lon=79.5667" class="px-2.5 py-1 bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white rounded text-[11px] font-bold transition">Inspect</a>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-950/50">
+              <td class="p-3 font-bold text-rose-400">#5</td>
+              <td class="p-3 font-sans font-bold text-slate-100">Bhor Ghat (Khandala / Lonavala)</td>
+              <td class="p-3 font-sans text-slate-400">Maharashtra (Western Ghats)</td>
+              <td class="p-3 text-cyan-400 font-bold">99.12%</td>
+              <td class="p-3 text-amber-400">42.0°</td>
+              <td class="p-3 text-cyan-300">95 mm</td>
+              <td class="p-3 font-bold text-rose-400">89.40 / 100</td>
+              <td class="p-3 text-right font-sans">
+                <a href="/risk-evaluation?lat=18.7557&lon=73.3768" class="px-2.5 py-1 bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white rounded text-[11px] font-bold transition">Inspect</a>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-950/50">
+              <td class="p-3 font-bold text-rose-400">#6</td>
+              <td class="p-3 font-sans font-bold text-slate-100">Tamhini Ghat Valley</td>
+              <td class="p-3 font-sans text-slate-400">Maharashtra (Western Ghats)</td>
+              <td class="p-3 text-cyan-400 font-bold">98.61%</td>
+              <td class="p-3 text-amber-400">38.0°</td>
+              <td class="p-3 text-cyan-300">82 mm</td>
+              <td class="p-3 font-bold text-rose-400">84.90 / 100</td>
+              <td class="p-3 text-right font-sans">
+                <a href="/risk-evaluation?lat=18.4550&lon=73.4250" class="px-2.5 py-1 bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white rounded text-[11px] font-bold transition">Inspect</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    <p>GeoSentry &copy; 2026. Production Landslide Early Warning & Risk Prioritization System.</p>
+  </footer>
+
+  <div id="offline-sync-toast" class="hidden"></div>
+</body>
+</html>

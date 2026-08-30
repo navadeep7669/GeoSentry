@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSentry — Field Geological Validator Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/offline_sync.js"></script>
+  <style>
+    @keyframes levitate {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-7px) rotate(1.5deg);
+        filter: drop-shadow(0 12px 14px rgba(16, 185, 129, 0.25));
+      }
+    }
+    @keyframes levitate-alt {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-8px) rotate(-2deg);
+        filter: drop-shadow(0 12px 14px rgba(6, 182, 212, 0.25));
+      }
+    }
+    @keyframes levitate-slow {
+      0%, 100% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-10px);
+        filter: drop-shadow(0 14px 18px rgba(244, 63, 94, 0.25));
+      }
+    }
+    .levitate {
+      animation: levitate 3.6s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-alt {
+      animation: levitate-alt 4.2s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-slow {
+      animation: levitate-slow 4.8s ease-in-out infinite;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-lg">
+    <div class="flex items-center space-x-3">
+      <a href="/" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white text-xl group-hover:scale-105 transition levitate">
+          <i class="fa-solid fa-mountain-sun"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">GeoSentry</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30 font-medium">v1.0.0</span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operational
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">AI Landslide Early Warning & Emergency Risk Prioritization</p>
+        </div>
+      </a>
+    </div>
+
+    <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <a href="/" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-house levitate"></i> <span class="hidden md:inline" data-i18n="nav.map">Home & Map</span>
+      </a>
+      <a href="/risk-priority" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-ranking-star text-amber-400 levitate-slow"></i> <span class="hidden md:inline" data-i18n="nav.priority">Priority</span>
+      </a>
+      <a href="/field-reports" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-camera text-teal-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.report">Reports</span>
+      </a>
+      <a href="/risk-evaluation" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-calculator levitate"></i> <span class="hidden md:inline" data-i18n="nav.engine">Risk Engine</span>
+      </a>
+      <a href="/analytics" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-chart-line text-emerald-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.analytics">Analytics</span>
+      </a>
+      <a href="/reports-review" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-shield-halved levitate-alt"></i> <span class="hidden md:inline" data-i18n="nav.validator">Validator</span>
+      </a>
+      <a href="/alert-dispatch" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-triangle-exclamation text-rose-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.alerts">Alerts</span>
+      </a>
+    </nav>
+
+    <div class="flex items-center space-x-2">
+      <!-- Language Selector -->
+      <select id="global-lang-selector" onchange="setAppLanguage(this.value)" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="mr">मराठी</option>
+        <option value="ml">മലയാളം</option>
+        <option value="bn">বাংলা</option>
+      </select>
+
+      <a href="/auth/login-page" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-user-shield levitate"></i> <span data-i18n="nav.signin">Stakeholder Sign In</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <a href="/" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-arrow-left"></i> Back to GIS Map
+      </a>
+      <span class="px-3 py-1 rounded-full bg-blue-950 border border-blue-800 text-blue-400 font-mono text-xs font-bold">
+        PATCH /reports/{id} &bull; Human Validation Loop
+      </span>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 flex-wrap gap-2">
+        <div>
+          <h1 class="text-xl font-black text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-blue-400"></i> Field Geological Validator Console
+          </h1>
+          <p class="text-xs text-slate-400">
+            Review and verify citizen-submitted evidence. Verifying a hazard dynamically updates the AI risk score (+6 to +18 points) and triggers emergency priority escalation.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 font-bold text-slate-300">
+            Role: <span class="text-blue-400 font-mono">Geological Validator+</span>
+          </span>
+          <button onclick="location.reload()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition border border-slate-700">
+            <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Queue
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950 uppercase font-mono text-slate-400 border-b border-slate-800 text-[11px]">
+            <tr>
+              <th class="p-3.5">Report ID</th>
+              <th class="p-3.5">Location & Sector</th>
+              <th class="p-3.5">Citizen Evidence & Hazard Type</th>
+              <th class="p-3.5">Local AI & Weather Context</th>
+              <th class="p-3.5">Status</th>
+              <th class="p-3.5 text-right">Validator Actions</th>
+            </tr>
+          </thead>
+          <tbody id="val-table" class="divide-y divide-slate-800 text-xs">
+            
+            <tr class="hover:bg-slate-950/50 transition">
+              <td class="p-3.5 font-mono font-bold text-emerald-400">#101</td>
+              <td class="p-3.5">
+                <div class="font-bold text-slate-100">Tamhini Ghat Valley (Sector 4)</div>
+                <div class="font-mono text-slate-400 text-[11px]">18.4550°N, 73.4250°E</div>
+                <div class="text-[10px] text-cyan-400">SH-60 Mangaon Route</div>
+              </td>
+              <td class="p-3.5 font-sans">
+                <div class="font-semibold text-slate-100 flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold">Tension Cracks</span>
+                  <span>Visible 3-inch fissures across road</span>
+                </div>
+                <div class="text-slate-400 text-[11px] mt-1">"Water seeping heavily from cut slope following morning downpour."</div>
+                <div class="text-slate-500 text-[10px] mt-0.5"><i class="fa-solid fa-paperclip mr-1"></i> 2 Geo-tagged Photos (MinIO encrypted)</div>
+              </td>
+              <td class="p-3.5 font-mono text-[11px]">
+                <div>Rainfall: <b class="text-cyan-400">82 mm / 24h</b></div>
+                <div>Slope: <b class="text-amber-400">38° (Steep)</b></div>
+                <div>AI Risk: <b class="text-rose-400 font-bold">84.9 / 100</b></div>
+              </td>
+              <td class="p-3.5">
+                <span id="status-101" class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold font-mono text-[10px]">
+                  PENDING VALIDATION
+                </span>
+              </td>
+              <td class="p-3.5 text-right space-x-1.5 font-sans">
+                <button onclick="handleValidate(101, 'verify')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition text-xs shadow-sm">
+                  <i class="fa-solid fa-check mr-1"></i> Verify (+12pts)
+                </button>
+                <button onclick="handleValidate(101, 'escalate')" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-bold transition text-xs shadow-sm">
+                  <i class="fa-solid fa-bell mr-1"></i> Escalate Alert
+                </button>
+                <button onclick="handleValidate(101, 'reject')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-bold transition text-xs border border-slate-700">
+                  <i class="fa-solid fa-xmark mr-1"></i> Reject
+                </button>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-slate-950/50 transition">
+              <td class="p-3.5 font-mono font-bold text-emerald-400">#102</td>
+              <td class="p-3.5">
+                <div class="font-bold text-slate-100">Bhor Ghat (Khandala North)</div>
+                <div class="font-mono text-slate-400 text-[11px]">18.7557°N, 73.3768°E</div>
+                <div class="text-[10px] text-cyan-400">Mumbai-Pune Expressway</div>
+              </td>
+              <td class="p-3.5 font-sans">
+                <div class="font-semibold text-slate-100 flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[10px] font-bold">Rockfall Debris</span>
+                  <span>Small rockfall debris blocking outer shoulder</span>
+                </div>
+                <div class="text-slate-400 text-[11px] mt-1">"Loose shale fragments detached from upper catch-fence."</div>
+                <div class="text-slate-500 text-[10px] mt-0.5"><i class="fa-solid fa-video mr-1"></i> 1 Video Clip (MinIO: s3://landslide-media/rep_102_vid.mp4)</div>
+              </td>
+              <td class="p-3.5 font-mono text-[11px]">
+                <div>Rainfall: <b class="text-cyan-400">95 mm / 24h</b></div>
+                <div>Slope: <b class="text-amber-400">42° (Severe)</b></div>
+                <div>AI Risk: <b class="text-rose-400 font-bold">89.4 / 100</b></div>
+              </td>
+              <td class="p-3.5">
+                <span id="status-102" class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold font-mono text-[10px]">
+                  PENDING VALIDATION
+                </span>
+              </td>
+              <td class="p-3.5 text-right space-x-1.5 font-sans">
+                <button onclick="handleValidate(102, 'verify')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition text-xs shadow-sm">
+                  <i class="fa-solid fa-check mr-1"></i> Verify (+12pts)
+                </button>
+                <button onclick="handleValidate(102, 'escalate')" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-bold transition text-xs shadow-sm">
+                  <i class="fa-solid fa-bell mr-1"></i> Escalate Alert
+                </button>
+                <button onclick="handleValidate(102, 'reject')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-bold transition text-xs border border-slate-700">
+                  <i class="fa-solid fa-xmark mr-1"></i> Reject
+                </button>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-slate-950/50 transition">
+              <td class="p-3.5 font-mono font-bold text-emerald-400">#103</td>
+              <td class="p-3.5">
+                <div class="font-bold text-slate-100">Wayanad (Chooralmala Reach)</div>
+                <div class="font-mono text-slate-400 text-[11px]">11.5478°N, 76.1264°E</div>
+                <div class="text-[10px] text-cyan-400">Meppadi-Chooralmala Link</div>
+              </td>
+              <td class="p-3.5 font-sans">
+                <div class="font-semibold text-slate-100 flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold">Slope Movement</span>
+                  <span>Waterlogged colluvium creeping toward stream</span>
+                </div>
+                <div class="text-slate-400 text-[11px] mt-1">"Mud seepage and tilting trees observed on upper estate gradient."</div>
+                <div class="text-slate-500 text-[10px] mt-0.5"><i class="fa-solid fa-paperclip mr-1"></i> 3 High-res Photos</div>
+              </td>
+              <td class="p-3.5 font-mono text-[11px]">
+                <div>Rainfall: <b class="text-cyan-400">112 mm / 24h</b></div>
+                <div>Slope: <b class="text-amber-400">39° (Steep)</b></div>
+                <div>AI Risk: <b class="text-rose-400 font-bold">94.6 / 100</b></div>
+              </td>
+              <td class="p-3.5">
+                <span id="status-103" class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold font-mono text-[10px]">
+                  PENDING VALIDATION
+                </span>
+              </td>
+              <td class="p-3.5 text-right space-x-1.5 font-sans">
+                <button onclick="handleValidate(103, 'verify')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition text-xs shadow-sm">
+                  <i class="fa-solid fa-check mr-1"></i> Verify (+12pts)
+                </button>
+                <button onclick="handleValidate(103, 'escalate')" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-bold transition text-xs shadow-sm">
+                  <i class="fa-solid fa-bell mr-1"></i> Escalate Alert
+                </button>
+                <button onclick="handleValidate(103, 'reject')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-bold transition text-xs border border-slate-700">
+                  <i class="fa-solid fa-xmark mr-1"></i> Reject
+                </button>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    <p>GeoSentry &copy; 2026. Production Landslide Early Warning & Risk Prioritization System.</p>
+  </footer>
+
+  <script>
+    function handleValidate(id, action) {
+      const badge = document.getElementById('status-' + id);
+      if (action === 'verify') {
+        badge.className = 'px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold font-mono text-[10px]';
+        badge.innerText = 'VERIFIED & BOOSTED';
+        alert(`Report #${id} VERIFIED! Dynamic risk boosted (+12 pts). Celery risk recompute queued for surrounding zone.`);
+      } else if (action === 'escalate') {
+        badge.className = 'px-2.5 py-1 rounded bg-rose-500/20 text-rose-400 border border-rose-500/40 font-bold font-mono text-[10px]';
+        badge.innerText = 'ESCALATED TO NDMA/SDMA';
+        window.location.href = `/alert-dispatch?zone=Sector+${id}`;
+      } else {
+        badge.className = 'px-2.5 py-1 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold font-mono text-[10px]';
+        badge.innerText = 'REJECTED';
+        alert(`Report #${id} marked as REJECTED.`);
+      }
+    }
+  </script>
+</body>
+</html>

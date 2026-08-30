@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSentry — Active Risk Zones & GIS Map</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/offline_sync.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    #map { height: 580px; border-radius: 1rem; z-index: 10; }
+    @keyframes levitate {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-7px) rotate(1.5deg);
+        filter: drop-shadow(0 12px 14px rgba(16, 185, 129, 0.25));
+      }
+    }
+    @keyframes levitate-alt {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-8px) rotate(-2deg);
+        filter: drop-shadow(0 12px 14px rgba(6, 182, 212, 0.25));
+      }
+    }
+    @keyframes levitate-slow {
+      0%, 100% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-10px);
+        filter: drop-shadow(0 14px 18px rgba(244, 63, 94, 0.25));
+      }
+    }
+    .levitate {
+      animation: levitate 3.6s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-alt {
+      animation: levitate-alt 4.2s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-slow {
+      animation: levitate-slow 4.8s ease-in-out infinite;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-lg">
+    <div class="flex items-center space-x-3">
+      <a href="/" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white text-xl group-hover:scale-105 transition levitate">
+          <i class="fa-solid fa-mountain-sun"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">GeoSentry</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30 font-medium">v1.0.0</span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operational
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">AI Landslide Early Warning & Emergency Risk Prioritization</p>
+        </div>
+      </a>
+    </div>
+
+    <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <a href="/" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-house levitate"></i> <span class="hidden md:inline" data-i18n="nav.map">Home & Map</span>
+      </a>
+      <a href="/risk-priority" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-ranking-star text-amber-400 levitate-slow"></i> <span class="hidden md:inline" data-i18n="nav.priority">Priority</span>
+      </a>
+      <a href="/field-reports" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-camera text-teal-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.report">Reports</span>
+      </a>
+      <a href="/risk-evaluation" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-calculator levitate"></i> <span class="hidden md:inline" data-i18n="nav.engine">Risk Engine</span>
+      </a>
+      <a href="/analytics" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-chart-line text-emerald-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.analytics">Analytics</span>
+      </a>
+      <a href="/reports-review" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-shield-halved levitate-alt"></i> <span class="hidden md:inline" data-i18n="nav.validator">Validator</span>
+      </a>
+      <a href="/alert-dispatch" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-triangle-exclamation text-rose-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.alerts">Alerts</span>
+      </a>
+    </nav>
+
+    <div class="flex items-center space-x-2">
+      <!-- Language Selector -->
+      <select id="global-lang-selector" onchange="setAppLanguage(this.value)" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="mr">मराठी</option>
+        <option value="ml">മലയാളം</option>
+        <option value="bn">বাংলা</option>
+      </select>
+
+      <a href="/auth/login-page" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-user-shield levitate"></i> <span data-i18n="nav.signin">Stakeholder Sign In</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <a href="/" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-arrow-left"></i> Back to API Directory
+      </a>
+      <span class="px-3 py-1 rounded-full bg-emerald-950 border border-emerald-700 text-emerald-400 font-mono text-xs font-bold">
+        GET /risk-zones
+      </span>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 class="text-xl font-black text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-map-location-dot text-emerald-400"></i> Active GIS Risk Zones Map
+          </h1>
+          <p class="text-xs text-slate-400">Spatial PostGIS query interface for tracked landslide hazard perimeters and emerging zones</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <button onclick="loadSampleRiskZones()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 transition">
+            <i class="fa-solid fa-rotate-right mr-1"></i> Reload Risk Zones
+          </button>
+          <button onclick="map.flyTo([18.55, 73.88], 12)" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition">
+            <i class="fa-solid fa-crosshairs mr-1"></i> Center Western Ghats
+          </button>
+        </div>
+      </div>
+
+      <div id="map"></div>
+
+      <div class="flex items-center justify-between flex-wrap gap-3 pt-2 text-xs border-t border-slate-800 text-slate-400">
+        <div class="flex items-center gap-4 flex-wrap">
+          <span class="font-semibold text-slate-300">Severity Legend:</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Low (< 25)</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Moderate (26 - 50)</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> High (51 - 75)</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-600 inline-block"></span> Critical (> 75)</span>
+        </div>
+        <div id="selected-coords" class="font-mono text-emerald-400 bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">
+          Click any map point to inspect coordinates
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    <p>GeoSentry &copy; 2026. Production Landslide Early Warning & Risk Prioritization System.</p>
+  </footer>
+</body>
+</html>
+
+<script>
+  let map, clickMarker, riskZonesLayer;
+  document.addEventListener('DOMContentLoaded', () => {
+    map = L.map('map').setView([18.55, 73.88], 11);
+
+    const darkCanvas = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri &copy; OpenStreetMap contributors &copy; GeoSentry GIS',
+      maxZoom: 16
+    });
+
+    const osmStandard = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    });
+
+    darkCanvas.addTo(map);
+
+    const baseMaps = {
+      "Dark GIS Canvas": darkCanvas,
+      "OpenStreetMap": osmStandard
+    };
+
+    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+
+    map.on('click', function(e) {
+      const lat = e.latlng.lat.toFixed(4);
+      const lon = e.latlng.lng.toFixed(4);
+      document.getElementById('selected-coords').innerText = `Selected Lat: ${lat}, Lon: ${lon}`;
+
+      if (clickMarker) map.removeLayer(clickMarker);
+      clickMarker = L.marker([lat, lon]).addTo(map)
+        .bindPopup(`<b>Inspection Point</b><br>Lat: ${lat}<br>Lon: ${lon}<br><a href="/risk-evaluation?lat=${lat}&lon=${lon}" class="text-emerald-400 underline font-semibold">Evaluate This Location &rarr;</a>`)
+        .openPopup();
+    });
+
+    loadSampleRiskZones();
+  });
+
+  function loadSampleRiskZones() {
+    if (riskZonesLayer) map.removeLayer(riskZonesLayer);
+    riskZonesLayer = L.layerGroup().addTo(map);
+
+    const zones = [
+      { lat: 18.56, lon: 73.89, radius: 1200, color: '#dc2626', name: 'Bhor Ghat NH-48 Zone', risk: 'Critical', score: 84 },
+      { lat: 18.55, lon: 73.88, radius: 900, color: '#ea580c', name: 'Tamhini Valley Expressway', risk: 'High', score: 71 },
+      { lat: 18.53, lon: 73.86, radius: 800, color: '#d97706', name: 'Mulshi Foothills Settlement', risk: 'Moderate', score: 49 },
+      { lat: 18.52, lon: 73.84, radius: 700, color: '#10b981', name: 'Pune West Lowland', risk: 'Low', score: 18 },
+    ];
+
+    zones.forEach(z => {
+      L.circle([z.lat, z.lon], {
+        color: z.color,
+        fillColor: z.color,
+        fillOpacity: 0.35,
+        radius: z.radius
+      }).addTo(riskZonesLayer)
+      .bindPopup(`<b>${z.name}</b><br>Risk Level: <b>${z.risk}</b><br>Priority Score: <b>${z.score}</b><br><a href="/risk-priority" class="text-emerald-400 underline">View in Priority Hotspots &rarr;</a>`);
+    });
+  }
+</script>

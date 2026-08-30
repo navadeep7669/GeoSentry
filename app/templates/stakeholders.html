@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSentry — Stakeholder Role Verification & Gateway</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+  
+  <header class="bg-slate-900/95 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-4 sm:px-6 py-3 flex items-center justify-between shadow-xl">
+    <div class="flex items-center space-x-3">
+      <a href="/" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white text-xl group-hover:scale-105 transition">
+          <i class="fa-solid fa-mountain-sun"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">GeoSentry</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30 font-mono font-bold">LIVE</span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Early Warning Active
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden md:block">National Landslide Early Warning, Dynamic Prioritization & Rapid Rescue</p>
+        </div>
+      </a>
+    </div>
+
+    <nav class="flex items-center space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <a href="/" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-house"></i> <span class="hidden lg:inline">Home & Map</span>
+      </a>
+      <a href="/stakeholders" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-users-gear"></i> <span class="hidden lg:inline">Stakeholders</span>
+      </a>
+      <a href="/risk-priority" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-ranking-star text-amber-400"></i> <span class="hidden lg:inline">High Risk Hotspots</span>
+      </a>
+      <a href="/field-reports" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-camera text-teal-400"></i> <span class="hidden lg:inline">Report Incident</span>
+      </a>
+      <!-- Validator Console: Hidden by default for citizens; dynamically shown for validator/authority roles -->
+      <a href="/reports-review" id="nav-validator-link" class="hidden px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-400 hover:text-blue-300 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-shield-halved"></i> <span class="hidden lg:inline">Validator Console</span>
+      </a>
+      <a href="/alert-dispatch" id="nav-alerts-link" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-triangle-exclamation"></i> <span class="hidden lg:inline">Alert Center</span>
+      </a>
+    </nav>
+
+    <div class="flex items-center space-x-2">
+      <div id="user-badge" class="hidden sm:flex items-center gap-2 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-400" id="role-indicator-dot"></span>
+        <span id="user-role-label" class="font-bold text-slate-300">Citizen</span>
+      </div>
+      <a href="/stakeholders" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-950 text-cyan-300 hover:bg-cyan-900 border border-cyan-800 flex items-center gap-1.5 transition shadow">
+        <i class="fa-solid fa-id-badge"></i> Stakeholders
+      </a>
+      <a href="/auth/login-page" id="auth-btn" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-user-lock"></i> <span id="auth-btn-text">Sign In</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <a href="/" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-arrow-left"></i> Back to Homepage & Map
+      </a>
+      <span class="px-3 py-1 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-400 font-mono text-xs font-bold">
+        User Verification & Stakeholder Access
+      </span>
+    </div>
+
+    <!-- Banner -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/40 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-2">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-950 px-2.5 py-0.5 rounded-full border border-cyan-800">Stakeholder Gateway</span>
+        <span class="text-xs text-slate-400 font-mono">9 Authorized User Personas</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-100">Who Is Using GeoSentry?</h1>
+      <p class="text-xs text-slate-300 max-w-4xl">
+        Select your authorized institutional role or citizen persona below to activate customized dashboards, permissions, and rapid emergency tools.
+      </p>
+    </div>
+
+    <!-- Stakeholder Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      
+      <!-- 1. District Administrations -->
+      <div class="bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-5 shadow-lg space-y-3 transition flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-cyan-600/20 text-cyan-400 flex items-center justify-center text-lg border border-cyan-500/30">
+            <i class="fa-solid fa-landmark"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-100">District Administrations</h3>
+          <p class="text-xs text-slate-400">District Magistrates, Collectors, and Revenue Officers managing regional emergency mitigation.</p>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            <li>District-level hazard prioritization</li>
+            <li>Evacuation zone sanctioning</li>
+            <li>Emergency fund allocation</li>
+          </ul>
+        </div>
+        <button onclick="selectPersona('authority', 'District Administration')" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl transition shadow">
+          Activate District Admin Portal &rarr;
+        </button>
+      </div>
+
+      <!-- 2. Disaster Management Authorities -->
+      <div class="bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-2xl p-5 shadow-lg space-y-3 transition flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-rose-600/20 text-rose-400 flex items-center justify-center text-lg border border-rose-500/30">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-100">Disaster Management Authorities</h3>
+          <p class="text-xs text-slate-400">NDMA, SDMA, and DDMA state and national emergency coordination headquarters.</p>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            <li>Multi-channel alert broadcasts (SMS/Push)</li>
+            <li>Early warning threshold monitoring</li>
+            <li>Inter-agency resource coordination</li>
+          </ul>
+        </div>
+        <button onclick="selectPersona('authority', 'Disaster Management Authority')" class="w-full py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl transition shadow">
+          Activate SDMA / NDMA Portal &rarr;
+        </button>
+      </div>
+
+      <!-- 3. State Government Agencies -->
+      <div class="bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 shadow-lg space-y-3 transition flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center text-lg border border-emerald-500/30">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-100">State Government Agencies</h3>
+          <p class="text-xs text-slate-400">Departments of Relief, Rehabilitation, Forest, Geology, and Mining.</p>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            <li>State-wide risk mapping & GIS feeds</li>
+            <li>Satellite Earth Observation tracking</li>
+            <li>Long-term slope stabilization planning</li>
+          </ul>
+        </div>
+        <button onclick="selectPersona('authority', 'State Government Agency')" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow">
+          Activate State Agency Portal &rarr;
+        </button>
+      </div>
+
+      <!-- 4. Emergency Response Teams -->
+      <div class="bg-slate-900 border border-slate-800 hover:border-orange-500/50 rounded-2xl p-5 shadow-lg space-y-3 transition flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-orange-600/20 text-orange-400 flex items-center justify-center text-lg border border-orange-500/30">
+            <i class="fa-solid fa-truck-medical"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-100">Emergency Response Teams</h3>
+          <p class="text-xs text-slate-400">NDRF, SDRF, Fire & Rescue Services, and 108 Emergency Medical Services.</p>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            <li>Trauma hospital bed live tracking</li>
+            <li>Fast rescue route navigation</li>
+            <li>Ground deployment telemetry</li>
+          </ul>
+        </div>
+        <button onclick="selectPersona('authority', 'Emergency Response Team')" class="w-full py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-xl transition shadow">
+          Activate Emergency Responders &rarr;
+        </button>
+      </div>
+
+      <!-- 5. Road & Infrastructure Authorities -->
+      <div class="bg-slate-900 border border-slate-800 hover:border-teal-500/50 rounded-2xl p-5 shadow-lg space-y-3 transition flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-teal-600/20 text-teal-400 flex items-center justify-center text-lg border border-teal-500/30">
+            <i class="fa-solid fa-road"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-100">Road & Infrastructure Authorities</h3>
+          <p class="text-xs text-slate-400">NHAI, State PWD, Border Roads Organisation (BRO), and Indian Railways.</p>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            <li>Mountain highway blockage alerts (NH-48, NH-10)</li>
+            <li>Debris clearance machinery dispatch</li>
+            <li>Critical bridge & tunnel vulnerability checks</li>
+          </ul>
+        </div>
+        <button onclick="selectPersona('authority', 'Infrastructure Authority')" class="w-full py-2 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs rounded-xl transition shadow">
+          Activate Infrastructure Portal &rarr;
+        </button>
+      </div>
+
+      <!-- 6. Local Administrations -->
+      <div class="bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl p-5 shadow-lg space-y-3 transition flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-lg border border-indigo-500/30">
+            <i class="fa-solid fa-city"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-100">Local Administrations</h3>
+          <p class="text-xs text-slate-400">Gram Panchayats, Block Development Officers, and Municipal Councils.</p>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            <li>Village-level shelter activation</li>
+            <li>Direct local siren & PA warnings</li>
+            <li>Community headcount & vulnerable register</li>
+          </ul>
+        </div>
+        <button onclick="selectPersona('authority', 'Local Administration')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition shadow">
+          Activate Local Admin Portal &rarr;
+        </button>
+      </div>
+
+      <!-- 7. Field Officials & Validators -->
+      <div class="bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-2xl p-5 shadow-lg space-y-3 transition flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center text-lg border border-blue-500/30">
+            <i class="fa-solid fa-user-check"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-100">Field Officials & Validators</h3>
+          <p class="text-xs text-slate-400">Ground verification officers, geologists, and middleman verifiers.</p>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            <li>Review & validate citizen field reports</li>
+            <li>Ground truth crack measurements</li>
+            <li>Trigger automated Celery risk recomputations</li>
+          </ul>
+        </div>
+        <button onclick="selectPersona('validator', 'Field Validator (Middleman)')" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition shadow">
+          Activate Validator Portal &rarr;
+        </button>
+      </div>
+
+      <!-- 8. Remote & Vulnerable Communities -->
+      <div class="bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 shadow-lg space-y-3 transition flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center text-lg border border-emerald-500/30">
+            <i class="fa-solid fa-tree"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-100">Remote & Vulnerable Communities</h3>
+          <p class="text-xs text-slate-400">Tribal settlements, isolated hill hamlets, and high-slope agrarian villages.</p>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            <li>Multi-lingual voice bot (STT & TTS)</li>
+            <li>Offline-ready emergency alert SMS</li>
+            <li>Nearest medical clinic & shelter path</li>
+          </ul>
+        </div>
+        <button onclick="selectPersona('citizen', 'Remote Community Resident')" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow">
+          Activate Community Portal &rarr;
+        </button>
+      </div>
+
+      <!-- 9. Citizens Living in Landslide Areas -->
+      <div class="bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 shadow-lg space-y-3 transition flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center text-lg border border-emerald-500/30">
+            <i class="fa-solid fa-people-roof"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-100">Citizens Living in Landslide Areas</h3>
+          <p class="text-xs text-slate-400">Local residents, mountain commuters, hillside tourists, and local businesses.</p>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            <li>Submit photo/video reports of cracks</li>
+            <li>View local danger zone warnings</li>
+            <li>Access nearest rescue hospitals & 108</li>
+          </ul>
+        </div>
+        <button onclick="selectPersona('citizen', 'Citizen (Landslide Area)')" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow">
+          Activate Citizen Portal &rarr;
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>GeoSentry &copy; 2026. AI Landslide Early Warning & Rapid Emergency Rescue Platform.</p>
+      <div class="flex items-center space-x-4 text-slate-400">
+        <span><i class="fa-solid fa-phone text-emerald-400 mr-1"></i> Helpline: 112 / 108</span>
+        <span><i class="fa-solid fa-shield text-cyan-400 mr-1"></i> NDRF: 1078</span>
+        <a href="/system-health" class="hover:text-slate-200"><i class="fa-solid fa-heart-pulse text-emerald-400 mr-1"></i> System Health</a>
+        <a href="/docs" target="_blank" class="hover:text-slate-200"><i class="fa-solid fa-code text-teal-400 mr-1"></i> API Docs</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Multi-Lingual AI Assistant -->
+  <div id="chat-toggle-btn" onclick="toggleChat()" class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 text-white shadow-2xl shadow-emerald-500/40 flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition group border-2 border-emerald-300/30">
+    <i class="fa-solid fa-headset text-2xl group-hover:rotate-12 transition"></i>
+    <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 border-2 border-slate-950 animate-ping"></span>
+    <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 border-2 border-slate-950"></span>
+  </div>
+
+  <div id="chat-window" class="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[520px] bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl flex flex-col hidden overflow-hidden transition-all duration-300">
+    <div class="bg-gradient-to-r from-slate-900 to-emerald-950 p-4 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-emerald-600/30 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-lg">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-100 flex items-center gap-1.5">
+            GeoSentry AI Assistant
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          </h3>
+          <p class="text-[10px] text-slate-400 font-mono">Multi-Lingual Rescue & Safety Bot</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-1.5">
+        <select id="chat-lang" onchange="changeChatLanguage()" class="bg-slate-950 text-slate-200 border border-slate-800 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-emerald-500">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="ml">മലയാളം (Malayalam)</option>
+          <option value="bn">বাংলা (Bengali)</option>
+        </select>
+        <button onclick="toggleChat()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-slate-950/80 px-3 py-2 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto text-[11px] whitespace-nowrap custom-scrollbar">
+      <button onclick="sendQuickPrompt('nearest_hospital')" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition flex items-center gap-1">
+        <i class="fa-solid fa-hospital text-rose-400"></i> Nearest Hospital
+      </button>
+      <button onclick="sendQuickPrompt('current_risk')" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition flex items-center gap-1">
+        <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Landslide Risk
+      </button>
+      <button onclick="sendQuickPrompt('evacuation')" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition flex items-center gap-1">
+        <i class="fa-solid fa-person-running text-teal-400"></i> Evacuation Tips
+      </button>
+      <button onclick="sendQuickPrompt('emergency_numbers')" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition flex items-center gap-1">
+        <i class="fa-solid fa-phone text-cyan-400"></i> Helplines
+      </button>
+    </div>
+
+    <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs custom-scrollbar">
+      <div class="flex items-start space-x-2">
+        <div class="w-6 h-6 rounded-lg bg-emerald-600/30 text-emerald-400 flex items-center justify-center text-xs mt-0.5">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="bg-slate-800/90 text-slate-200 p-3 rounded-2xl rounded-tl-none max-w-[85%] border border-slate-700/50 space-y-1">
+          <p id="bot-welcome-msg">Hello! I am your GeoSentry AI Disaster & Rescue Assistant. Speak or type to ask about landslide alerts, nearest rescue hospitals, or evacuation guidance.</p>
+          <button onclick="speakLastBotMessage()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 pt-1">
+            <i class="fa-solid fa-volume-high"></i> Listen Aloud (TTS)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-3 bg-slate-950 border-t border-slate-800">
+      <form onsubmit="handleUserChatSubmit(event)" class="flex items-center space-x-2">
+        <input type="text" id="chat-input" placeholder="Type or speak a question..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+        
+        <button type="button" id="mic-btn" onclick="toggleSpeechToText()" title="Speak with Mic (Speech-to-Text)" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 border border-slate-700 transition flex items-center justify-center">
+          <i class="fa-solid fa-microphone" id="mic-icon"></i>
+        </button>
+
+        <button type="submit" class="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 transition flex items-center justify-center">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </form>
+      <div id="mic-status" class="hidden text-[10px] text-emerald-400 mt-1 flex items-center gap-1 font-mono">
+        <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span> Listening... Speak now
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function initUserRole() {
+      const savedRole = localStorage.getItem('geosentry_role') || 'citizen';
+      const roleLabel = document.getElementById('user-role-label');
+      const validatorNav = document.getElementById('nav-validator-link');
+
+      if (roleLabel) {
+        const names = {
+          'citizen': 'Citizen (Hill Area)',
+          'validator': 'Field Validator',
+          'authority': 'Disaster Authority'
+        };
+        roleLabel.innerText = names[savedRole] || 'Citizen';
+      }
+
+      if (savedRole === 'validator' || savedRole === 'authority') {
+        if (validatorNav) validatorNav.classList.remove('hidden');
+      } else {
+        if (validatorNav) validatorNav.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initUserRole();
+    });
+
+    function selectPersona(role, personaName) {
+      localStorage.setItem('geosentry_role', role);
+      localStorage.setItem('geosentry_persona', personaName);
+      alert('Persona activated: ' + personaName + ' (Role: ' + role.toUpperCase() + '). Permissions and views updated.');
+      window.location.href = role === 'validator' ? '/reports-review' : '/';
+    }
+
+    function toggleChat() {
+      const win = document.getElementById('chat-window');
+      win.classList.toggle('hidden');
+    }
+
+    let recognition;
+    let isListening = false;
+
+    function toggleSpeechToText() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.');
+        return;
+      }
+
+      if (isListening) {
+        recognition.stop();
+        isListening = false;
+        document.getElementById('mic-status').classList.add('hidden');
+        document.getElementById('mic-icon').className = 'fa-solid fa-microphone';
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      const lang = document.getElementById('chat-lang').value;
+      const langMap = { 'en': 'en-IN', 'hi': 'hi-IN', 'mr': 'mr-IN', 'ml': 'ml-IN', 'bn': 'bn-IN' };
+      recognition.lang = langMap[lang] || 'en-IN';
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        isListening = true;
+        document.getElementById('mic-status').classList.remove('hidden');
+        document.getElementById('mic-icon').className = 'fa-solid fa-microphone text-rose-500 animate-pulse';
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('chat-input').value = transcript;
+        handleUserChatSubmit();
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event);
+        isListening = false;
+        document.getElementById('mic-status').classList.add('hidden');
+        document.getElementById('mic-icon').className = 'fa-solid fa-microphone';
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        document.getElementById('mic-status').classList.add('hidden');
+        document.getElementById('mic-icon').className = 'fa-solid fa-microphone';
+      };
+
+      recognition.start();
+    }
+
+    let lastBotReply = "Hello! I am your GeoSentry AI Disaster Assistant.";
+
+    function speakText(text, langCode) {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      const langMap = { 'en': 'en-IN', 'hi': 'hi-IN', 'mr': 'mr-IN', 'ml': 'ml-IN', 'bn': 'bn-IN' };
+      utterance.lang = langMap[langCode] || 'en-IN';
+      utterance.rate = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function speakLastBotMessage() {
+      const lang = document.getElementById('chat-lang').value;
+      speakText(lastBotReply, lang);
+    }
+
+    const botKnowledge = {
+      en: {
+        nearest_hospital: "The nearest emergency trauma hospital is Sub-District Trauma Hospital, Khandala / Lonavala (5.4 km, Emergency Beds: 45, Hotline: 108). In Wayanad: Wayanad District Medical College, Mananthavady (Hotline: 04935-240223).",
+        current_risk: "Current Dynamic Risk for Western Ghats (Bhor Ghat NH-48 & Tamhini Pass) is CRITICAL (Score: 84.9) due to continuous 24h rainfall (85mm) and high soil saturation (0.80). Avoid non-essential hill transit.",
+        evacuation: "Evacuation Protocol: 1. Move away from steep slopes and natural drainage streams. 2. Head to Designated Relief Center at Khandala Community Hall. 3. Carry emergency documents, dry food, and water. 4. Call 112 for rescue.",
+        emergency_numbers: "Emergency Hotlines: All-India Disaster Helpline: 112 | Ambulance / Medical: 108 | NDRF Control Room: 1078 | State Disaster Management SDMA: 1070 | Fire Service: 101."
+      },
+      hi: {
+        nearest_hospital: "निकटतम आपातकालीन ट्रॉमा अस्पताल उप-जिला ट्रॉमा अस्पताल, खंडाला / लोनावाला है (5.4 किमी, 45 बिस्तर, हेल्पलाइन: 108)। वायनाड में: वायनाड जिला मेडिकल कॉलेज (फोन: 04935-240223)।",
+        current_risk: "पश्चिमी घाट (भोर घाट NH-48 और ताम्हिणी पास) के लिए वर्तमान जोखिम अति गंभीर (स्कोर: 84.9) है। भारी वर्षा और मिट्टी के अत्यधिक कटाव के कारण पहाड़ी यात्रा से बचें।",
+        evacuation: "निकासी प्रोटोकॉल: 1. ढलान और जल निकासी वाले नालों से तुरंत दूर हटें। 2. सुरक्षित राहत शिविर (खंडाला कम्युनिटी हॉल) की ओर जाएं। 3. आपातकालीन किट साथ रखें। 4. बचाव हेतु 112 डायल करें।",
+        emergency_numbers: "आपातकालीन हेल्पलाइन: राष्ट्रीय आपदा हेल्पलाइन: 112 | एम्बुलेंस / चिकित्सा: 108 | एनडीआरएफ (NDRF): 1078 | राज्य आपदा प्रबंधन: 1070।"
+      },
+      mr: {
+        nearest_hospital: "जवळचे आपत्कालीन रुग्णालय उपजिल्हा ट्रॉमा रुग्णालय, खंडाळा / लोणावळा आहे (अंतर: 5.4 किमी, आपत्कालीन बेड: 45, रुग्णवाहिका: 108). पुणे-सातारा मार्ग: पुणे ससून रुग्णालय (फोन: 020-26128000).",
+        current_risk: "पश्चिम घाट (बोर घाट NH-48 आणि ताम्हिणी घाट) मध्ये दरड कोसळण्याचा धोका अतिगंभीर (स्कोर: 84.9) आहे. मुसळधार पावसामुळे घाटातील प्रवास त्वरित टाळा.",
+        evacuation: "स्थलांतर मार्गदर्शन: 1. डोंगराच्या उतारापासून आणि पाण्याच्या प्रवाहापासून दूर व्हा. 2. सुरक्षित निवार केंद्र (खंडाळा हॉल) येथे जा. 3. मदतीसाठी 112 किंवा 108 वर संपर्क साधा.",
+        emergency_numbers: "आपत्कालीन दूरध्वनी: राष्ट्रीय मदत: 112 | रुग्णवाहिका: 108 | NDRF नियंत्रण कक्ष: 1078 | राज्य आपत्ती व्यवस्थापन: 1070."
+      },
+      ml: {
+        nearest_hospital: "ഏറ്റവും അടുത്തുള്ള എമർജൻസി ട്രോമ ആശുപത്രി വയനാട് ജില്ലാ മെഡിക്കൽ കോളേജ്, മാനന്തവാടി ആണ് (ഹെൽപ്പ് ലൈൻ: 108, ഫോൺ: 04935-240223). കൽപ്പറ്റ ജനറൽ ആശുപത്രി (04936-202245).",
+        current_risk: "വയനാട്, ഇടുക്കി മലയോര മേഖലകളിൽ ഉരുൾപൊട്ടൽ സാധ്യത തീവ്രമാണ് (Critical). കനത്ത മഴ തുടരുന്നതിനാൽ മലയോര യാത്രകൾ പൂർണ്ണമായും ഒഴിവാക്കുക.",
+        evacuation: "ഒഴിപ്പിക്കൽ നിർദ്ദേശങ്ങൾ: 1. മണ്ണിടിച്ചിൽ സാധ്യതയുള്ള ചരിവുകളിൽ നിന്ന് ഉടൻ മാറുക. 2. തദ്ദേശ സ്വയംഭരണ ദുരിതാശ്വാസ ക്യാമ്പിലേക്ക് മാറുക. 3. സഹായത്തിനായി 112 അല്ലെങ്കിൽ 108 വിളിക്കുക.",
+        emergency_numbers: "അടിയന്തര നമ്പറുകൾ: ദുരന്ത നിവാരണം: 112 | ആംബുലൻസ്: 108 | NDRF കൺട്രോൾ റൂം: 1078 | കേരള ദുരന്ത നിവാരണ അതോറിറ്റി: 1070."
+      },
+      bn: {
+        nearest_hospital: "নিকটবর্তী জরুরি ট্রমা হাসপাতাল: দার্জিলিং জেলা হাসপাতাল (হেল্পলাইন: 108)। গ্যাংটক: এসটিএনএম হাসপাতাল, গ্যাংটক (ফোন: 03592-202022)।",
+        current_risk: "পূর্ব হিমালয় অঞ্চলে (দার্জিলিং, গ্যাংটক NH-10) ভূমিধসের সতর্কতা উচ্চ (High)। পাহাড়ি রাস্তা এড়িয়ে চলুন।",
+        evacuation: "উদ্ধার ও স্থানান্তর: 1. খাড়া পাহাড়ের ঢাল থেকে নিরাপদ স্থানে যান। 2. নিকটস্থ ত্রাণ কেন্দ্রে আশ্রয় নিন। 3. জরুরি সহায়তার জন্য 112 নম্বরে ফোন করুন।",
+        emergency_numbers: "জরুরি হেল্পলাইন: জাতীয় দুর্যোগ হেল্পলাইন: 112 | অ্যাম্বুলেন্স: 108 | এনডিআরএফ (NDRF): 1078।"
+      }
+    };
+
+    function changeChatLanguage() {
+      const lang = document.getElementById('chat-lang').value;
+      const welcomes = {
+        en: "Hello! I am your GeoSentry AI Disaster & Rescue Assistant. Speak or type to ask about landslide alerts, nearest rescue hospitals, or evacuation guidance.",
+        hi: "नमस्ते! मैं आपका जियोसेंट्री एआई आपदा एवं बचाव सहायक हूँ। भूस्खलन चेतावनी, नजदीकी अस्पताल या बचाव जानकारी हेतु बोलें या टाइप करें।",
+        mr: "नमस्कार! मी आपला जिओसेंट्री आपत्ती व बचाव एआय सहाय्यक आहे. दरड इशारा, जवळचे रुग्णालय किंवा बचाव माहितीसाठी बोला किंवा टाईप करा.",
+        ml: "നമസ്കാരം! ഞാൻ നിങ്ങളുടെ ജിയോസെൻട്രി എഐ രക്ഷാപ്രവർത്തന അസിസ്റ്റന്റാണ്. ഉരുൾപൊട്ടൽ മുന്നറിയിപ്പുകൾ, ആശുപത്രികൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കാം.",
+        bn: "নমস্কার! আমি আপনার জিওসেন্ট্রি এআই দুর্যোগ ও উদ্ধার সহকারী। ভূমিধস সতর্কতা এবং নিকটস্থ হাসপাতালের জন্য জিজ্ঞাসা করুন।"
+      };
+      document.getElementById('bot-welcome-msg').innerText = welcomes[lang] || welcomes['en'];
+    }
+
+    function sendQuickPrompt(key) {
+      const lang = document.getElementById('chat-lang').value;
+      const dict = botKnowledge[lang] || botKnowledge['en'];
+      const response = dict[key] || botKnowledge['en'][key];
+      appendChatMessage('user', key.replace('_', ' ').toUpperCase());
+      setTimeout(() => {
+        appendChatMessage('bot', response);
+        speakText(response, lang);
+      }, 300);
+    }
+
+    function handleUserChatSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendChatMessage('user', text);
+      input.value = '';
+
+      const lang = document.getElementById('chat-lang').value;
+      const dict = botKnowledge[lang] || botKnowledge['en'];
+      
+      let reply = "";
+      const lower = text.toLowerCase();
+      if (lower.includes('hospital') || lower.includes('doctor') || lower.includes('medical') || lower.includes('अस्पताल') || lower.includes('रुग्णालय') || lower.includes('ആശുപത്രി')) {
+        reply = dict.nearest_hospital;
+      } else if (lower.includes('risk') || lower.includes('landslide') || lower.includes('warning') || lower.includes('खतरा') || lower.includes('धोका') || lower.includes('ഉരുൾപൊട്ടൽ')) {
+        reply = dict.current_risk;
+      } else if (lower.includes('evacuat') || lower.includes('safe') || lower.includes('escape') || lower.includes('बचाव') || lower.includes('स्थलांतर') || lower.includes('രക്ഷ')) {
+        reply = dict.evacuation;
+      } else if (lower.includes('phone') || lower.includes('call') || lower.includes('number') || lower.includes('helpline') || lower.includes('नंबर') || lower.includes('मदत')) {
+        reply = dict.emergency_numbers;
+      } else {
+        reply = `GeoSentry AI: Understood. Our sensors detect elevated moisture in hill zones. Stay alert, avoid steep cuts, and keep emergency contact 112 / 108 ready. (Language: ${lang.toUpperCase()})`;
+      }
+
+      setTimeout(() => {
+        appendChatMessage('bot', reply);
+        speakText(reply, lang);
+      }, 400);
+    }
+
+    function appendChatMessage(sender, text) {
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      
+      if (sender === 'user') {
+        div.className = 'flex items-start justify-end space-x-2';
+        div.innerHTML = `
+          <div class="bg-emerald-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] text-xs shadow-md">
+            ${text}
+          </div>
+          <div class="w-6 h-6 rounded-lg bg-emerald-700 text-white flex items-center justify-center text-xs mt-0.5">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        `;
+      } else {
+        lastBotReply = text;
+        div.className = 'flex items-start space-x-2';
+        div.innerHTML = `
+          <div class="w-6 h-6 rounded-lg bg-emerald-600/30 text-emerald-400 flex items-center justify-center text-xs mt-0.5">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <div class="bg-slate-800/90 text-slate-200 p-3 rounded-2xl rounded-tl-none max-w-[85%] border border-slate-700/50 space-y-1 text-xs">
+            <p>${text}</p>
+            <button onclick="speakText('${lastBotReply.replace(/'/g, "\\'")}', document.getElementById('chat-lang').value)" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 pt-1">
+              <i class="fa-solid fa-volume-high"></i> Listen (TTS)
+            </button>
+          </div>
+        `;
+      }
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+  </script>
+</body>
+</html>
+

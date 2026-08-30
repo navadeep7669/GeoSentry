@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSentry — Dynamic Risk Engine & Multi-Factor Prioritization</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/offline_sync.js"></script>
+  <style>
+    @keyframes levitate {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-7px) rotate(1.5deg);
+        filter: drop-shadow(0 12px 14px rgba(16, 185, 129, 0.25));
+      }
+    }
+    @keyframes levitate-alt {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-8px) rotate(-2deg);
+        filter: drop-shadow(0 12px 14px rgba(6, 182, 212, 0.25));
+      }
+    }
+    @keyframes levitate-slow {
+      0%, 100% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-10px);
+        filter: drop-shadow(0 14px 18px rgba(244, 63, 94, 0.25));
+      }
+    }
+    .levitate {
+      animation: levitate 3.6s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-alt {
+      animation: levitate-alt 4.2s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-slow {
+      animation: levitate-slow 4.8s ease-in-out infinite;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-lg">
+    <div class="flex items-center space-x-3">
+      <a href="/" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white text-xl group-hover:scale-105 transition levitate">
+          <i class="fa-solid fa-mountain-sun"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">GeoSentry</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30 font-medium">v1.0.0</span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operational
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">AI Landslide Early Warning & Emergency Risk Prioritization</p>
+        </div>
+      </a>
+    </div>
+
+    <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <a href="/" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-house levitate"></i> <span class="hidden md:inline" data-i18n="nav.map">Home & Map</span>
+      </a>
+      <a href="/risk-priority" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-ranking-star text-amber-400 levitate-slow"></i> <span class="hidden md:inline" data-i18n="nav.priority">Priority</span>
+      </a>
+      <a href="/field-reports" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-camera text-teal-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.report">Reports</span>
+      </a>
+      <a href="/risk-evaluation" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-calculator levitate"></i> <span class="hidden md:inline" data-i18n="nav.engine">Risk Engine</span>
+      </a>
+      <a href="/analytics" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-chart-line text-emerald-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.analytics">Analytics</span>
+      </a>
+      <a href="/reports-review" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-shield-halved levitate-alt"></i> <span class="hidden md:inline" data-i18n="nav.validator">Validator</span>
+      </a>
+      <a href="/alert-dispatch" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-triangle-exclamation text-rose-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.alerts">Alerts</span>
+      </a>
+    </nav>
+
+    <div class="flex items-center space-x-2">
+      <!-- Language Selector -->
+      <select id="global-lang-selector" onchange="setAppLanguage(this.value)" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="mr">मराठी</option>
+        <option value="ml">മലയാളം</option>
+        <option value="bn">বাংলা</option>
+      </select>
+
+      <a href="/auth/login-page" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-user-shield levitate"></i> <span data-i18n="nav.signin">Stakeholder Sign In</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <a href="/" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-arrow-left"></i> Back to GIS Map
+      </a>
+      <span class="px-3 py-1 rounded-full bg-emerald-950 border border-emerald-700 text-emerald-400 font-mono text-xs font-bold">
+        POST /risk-zones/evaluate
+      </span>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+      <div>
+        <h1 class="text-xl font-black text-slate-100 flex items-center gap-2">
+          <i class="fa-solid fa-brain text-emerald-400"></i> Dynamic Landslide Risk & Prioritization Calculator
+        </h1>
+        <p class="text-xs text-slate-400">
+          Combines live calibrated ML landslide probability, rainfall accumulation, slope terrain, soil moisture, and population/asset exposure into actionable emergency priority.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Input Form -->
+        <form id="evaluator-form" onsubmit="handleEvaluate(event)" class="lg:col-span-2 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Target Latitude (°)</label>
+              <input type="number" step="0.0001" id="eval-lat" value="18.4550" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Target Longitude (°)</label>
+              <input type="number" step="0.0001" id="eval-lon" value="73.4250" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">24h Rainfall (mm)</label>
+              <input type="number" step="1" id="eval-rain24" value="82" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">7d Accum. Rain (mm)</label>
+              <input type="number" step="1" id="eval-rain7d" value="250" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Slope Angle (°)</label>
+              <input type="number" step="1" id="eval-slope" value="38" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Soil Saturation (0 - 1)</label>
+              <input type="number" step="0.05" min="0" max="1" id="eval-soil" value="0.65" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Satellite Surface Change</label>
+              <input type="number" step="0.05" min="0" max="1" id="eval-sat" value="0.18" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Verified Field Reports</label>
+              <input type="number" step="1" min="0" id="eval-reports" value="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200" />
+            </div>
+          </div>
+
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-3">
+            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-users-viewfinder"></i> Exposure & Critical Asset Parameters
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Population Density Factor</label>
+                <input type="number" step="0.05" min="0" max="1" id="eval-pop" value="0.60" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Road Criticality (0 - 1)</label>
+                <input type="number" step="0.05" min="0" max="1" id="eval-road" value="0.85" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Critical Infrastructure</label>
+                <input type="number" step="0.05" min="0" max="1" id="eval-infra" value="0.70" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200" />
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="eval-btn" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 font-bold text-white rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-calculator"></i> Calculate Dynamic Risk
+          </button>
+        </form>
+
+        <!-- Result Card -->
+        <div id="eval-result-card" class="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <span class="text-xs font-bold text-slate-400 uppercase">Assessment Output</span>
+              <span id="eval-badge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-rose-600/20 text-rose-400 border border-rose-500/40 uppercase">
+                CRITICAL
+              </span>
+            </div>
+
+            <!-- 4 Metrics Grid -->
+            <div class="grid grid-cols-2 gap-2 text-center text-xs">
+              <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+                <div class="text-[10px] text-cyan-400 uppercase font-semibold">Landslide Prob.</div>
+                <div id="res-prob" class="text-lg font-black text-cyan-400 font-mono">98.61%</div>
+              </div>
+              <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+                <div class="text-[10px] text-amber-400 uppercase font-semibold">Env Hazard</div>
+                <div id="res-env" class="text-lg font-black text-amber-400 font-mono">65.00</div>
+              </div>
+              <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+                <div class="text-[10px] text-purple-400 uppercase font-semibold">Exposure</div>
+                <div id="res-exp" class="text-lg font-black text-purple-400 font-mono">48.25</div>
+              </div>
+              <div class="p-2.5 bg-rose-950/30 rounded-xl border border-rose-900/60">
+                <div class="text-[10px] text-rose-300 uppercase font-semibold">Priority Score</div>
+                <div id="res-priority" class="text-lg font-black text-rose-400 font-mono">59.97</div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-900/70 rounded-xl border border-slate-800 text-xs space-y-1.5">
+              <div class="flex justify-between">
+                <span class="text-slate-400">LHASA Hazard Signal:</span>
+                <span id="res-lhasa" class="font-mono text-teal-400 font-bold">0.684</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Field Evidence Boost:</span>
+                <span id="res-boost" class="font-mono text-emerald-400 font-bold">+12.0 pts</span>
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <span class="text-xs font-bold text-slate-300"><i class="fa-solid fa-list-check text-emerald-400 mr-1"></i> Trigger Explanations:</span>
+              <ul id="res-reasons" class="text-xs text-slate-300 space-y-1 bg-slate-900/40 p-2.5 rounded-xl border border-slate-800 list-disc list-inside">
+                <li>high recent rainfall</li>
+                <li>steep terrain (38°)</li>
+                <li>2 verified field report(s) nearby</li>
+                <li>critical road connectivity at risk</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-800">
+            <span class="text-xs text-slate-400 block mb-1">Recommended Action:</span>
+            <div id="res-action" class="text-xs font-bold text-rose-300 bg-rose-950/40 p-2.5 rounded-xl border border-rose-900/60">
+              Immediate authority notification; assess evacuation, road closure and emergency responder deployment.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    <p>GeoSentry &copy; 2026. Production Landslide Early Warning & Risk Prioritization System.</p>
+  </footer>
+
+  <script>
+    async function handleEvaluate(e) {
+      e.preventDefault();
+      const payload = {
+        latitude: parseFloat(document.getElementById('eval-lat').value),
+        longitude: parseFloat(document.getElementById('eval-lon').value),
+        rainfall_24h_mm: parseFloat(document.getElementById('eval-rain24').value),
+        rainfall_7d_mm: parseFloat(document.getElementById('eval-rain7d').value),
+        slope_deg: parseFloat(document.getElementById('eval-slope').value),
+        soil_saturation: parseFloat(document.getElementById('eval-soil').value),
+        satellite_change: parseFloat(document.getElementById('eval-sat').value),
+        verified_field_reports: parseInt(document.getElementById('eval-reports').value),
+        population_exposure: parseFloat(document.getElementById('eval-pop').value),
+        road_importance: parseFloat(document.getElementById('eval-road').value),
+        critical_infrastructure: parseFloat(document.getElementById('eval-infra').value),
+        historical_susceptibility: 0.85,
+        rate_of_change: 0.50
+      };
+
+      try {
+        const resp = await fetch('/risk-zones/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+
+        // Update UI
+        const probPct = (data.model_probability * 100).toFixed(2);
+        document.getElementById('res-prob').innerText = `${probPct}%`;
+        document.getElementById('res-env').innerText = data.environmental_risk.toFixed(2);
+        document.getElementById('res-exp').innerText = data.exposure_score.toFixed(2);
+        document.getElementById('res-priority').innerText = data.priority_score.toFixed(2);
+        document.getElementById('res-lhasa').innerText = data.hazard_probability.toFixed(3);
+        document.getElementById('res-boost').innerText = `+${payload.verified_field_reports * 6}.0 pts`;
+
+        const badge = document.getElementById('eval-badge');
+        badge.innerText = data.risk_level.toUpperCase();
+        if (data.risk_level === 'critical') {
+          badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-rose-600/20 text-rose-400 border border-rose-500/40 uppercase';
+        } else if (data.risk_level === 'high') {
+          badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-orange-600/20 text-orange-400 border border-orange-500/40 uppercase';
+        } else if (data.risk_level === 'moderate') {
+          badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-amber-600/20 text-amber-400 border border-amber-500/40 uppercase';
+        } else {
+          badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-600/20 text-emerald-400 border border-emerald-500/40 uppercase';
+        }
+
+        const reasonsUl = document.getElementById('res-reasons');
+        reasonsUl.innerHTML = '';
+        data.reasons.forEach(r => {
+          const li = document.createElement('li');
+          li.innerText = r;
+          reasonsUl.appendChild(li);
+        });
+
+        document.getElementById('res-action').innerText = data.recommended_action;
+      } catch (err) {
+        console.error("Evaluation error", err);
+      }
+    }
+  </script>
+</body>
+</html>

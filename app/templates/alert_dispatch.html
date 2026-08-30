@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSentry — Role-Based Emergency Alert & Escalation Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/offline_sync.js"></script>
+  <style>
+    @keyframes levitate {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-7px) rotate(1.5deg);
+        filter: drop-shadow(0 12px 14px rgba(16, 185, 129, 0.25));
+      }
+    }
+    @keyframes levitate-alt {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-8px) rotate(-2deg);
+        filter: drop-shadow(0 12px 14px rgba(6, 182, 212, 0.25));
+      }
+    }
+    @keyframes levitate-slow {
+      0%, 100% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-10px);
+        filter: drop-shadow(0 14px 18px rgba(244, 63, 94, 0.25));
+      }
+    }
+    .levitate {
+      animation: levitate 3.6s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-alt {
+      animation: levitate-alt 4.2s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-slow {
+      animation: levitate-slow 4.8s ease-in-out infinite;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-lg">
+    <div class="flex items-center space-x-3">
+      <a href="/" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white text-xl group-hover:scale-105 transition levitate">
+          <i class="fa-solid fa-mountain-sun"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400" data-i18n="nav.brand">GeoSentry</span>
+            <span class="bg-rose-500/10 text-rose-400 text-xs px-2 py-0.5 rounded-full border border-rose-500/30 font-bold font-mono">EMERGENCY OPS</span>
+            <span id="network-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Online Synced
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block" data-i18n="nav.tagline">AI Landslide Early Warning & Emergency Risk Prioritization</p>
+        </div>
+      </a>
+    </div>
+
+    <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <a href="/" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-house levitate"></i> <span class="hidden md:inline" data-i18n="nav.map">Home & Map</span>
+      </a>
+      <a href="/risk-priority" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-ranking-star text-amber-400 levitate-slow"></i> <span class="hidden md:inline" data-i18n="nav.priority">Priority</span>
+      </a>
+      <a href="/field-reports" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-camera text-teal-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.report">Reports</span>
+      </a>
+      <a href="/risk-evaluation" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-calculator levitate"></i> <span class="hidden md:inline" data-i18n="nav.engine">Risk Engine</span>
+      </a>
+      <a href="/analytics" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-chart-line text-emerald-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.analytics">Analytics</span>
+      </a>
+      <a href="/reports-review" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-shield-halved levitate-alt"></i> <span class="hidden md:inline" data-i18n="nav.validator">Validator</span>
+      </a>
+      <a href="/alert-dispatch" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 text-white flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-triangle-exclamation text-white levitate"></i> <span class="hidden md:inline" data-i18n="nav.alerts">Alerts</span>
+      </a>
+    </nav>
+
+    <div class="flex items-center space-x-2">
+      <!-- Language Selector -->
+      <select id="global-lang-selector" onchange="setAppLanguage(this.value)" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="mr">मराठी</option>
+        <option value="ml">മലയാളം</option>
+        <option value="bn">বাংলা</option>
+      </select>
+
+      <a href="/auth/login-page" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-user-shield levitate"></i> <span data-i18n="nav.signin">Stakeholder Sign In</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    
+    <!-- Top Control Banner: Role View Switcher & Severity Filters -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+      <div>
+        <h1 class="text-xl font-black text-slate-100 flex items-center gap-2">
+          <i class="fa-solid fa-tower-broadcast text-rose-400"></i> Role-Based Emergency Alert & Escalation Center
+        </h1>
+        <p class="text-xs text-slate-400 mt-0.5">
+          Real-time incident notification, multi-stakeholder routing, formal acknowledgement tracking, and escalation hierarchy.
+        </p>
+      </div>
+
+      <!-- Role-Based View Switcher -->
+      <div class="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800 text-xs">
+        <span class="text-slate-400 text-[11px] font-bold px-2">Role View:</span>
+        <button onclick="setRoleView('authority')" id="btn-role-authority" class="px-3 py-1.5 rounded-lg font-bold bg-slate-800 text-slate-200 transition">
+          <i class="fa-solid fa-building-shield mr-1"></i> Authority
+        </button>
+        <button onclick="setRoleView('medical')" id="btn-role-medical" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition">
+          <i class="fa-solid fa-hospital mr-1"></i> Medical
+        </button>
+        <button onclick="setRoleView('higher_official')" id="btn-role-higher" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition">
+          <i class="fa-solid fa-chess-king mr-1"></i> Higher Official
+        </button>
+        <button onclick="setRoleView('citizen')" id="btn-role-citizen" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition">
+          <i class="fa-solid fa-user mr-1"></i> Citizen Advisory
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Alerts Live Feed -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-bolt text-amber-400"></i> Active Incidents Requiring Response
+          <span id="active-alert-count" class="px-2 py-0.5 rounded-full bg-rose-950 border border-rose-800 text-rose-400 font-mono text-[10px] font-bold">3 Active</span>
+        </h2>
+        <div class="flex items-center gap-2 text-xs">
+          <select id="severity-filter" onchange="fetchAlerts()" class="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-slate-300 text-xs">
+            <option value="all">All Severities</option>
+            <option value="critical">Critical Only</option>
+            <option value="high">High Only</option>
+          </select>
+          <button onclick="fetchAlerts()" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-800 transition">
+            <i class="fa-solid fa-rotate-right mr-1"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div id="alerts-container" class="space-y-4">
+        <!-- Dynamic Alert Cards rendered by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Manual Dispatch Section (For Authorized Emergency Operations) -->
+    <div id="dispatch-form-section" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-satellite-dish text-rose-400"></i> Manual Multi-Channel Broadcast Dispatcher
+          </h2>
+          <p class="text-xs text-slate-400">
+            Authorized incident commanders can trigger immediate targeted emergency warnings via SMS and Push notification.
+          </p>
+        </div>
+        <span class="text-xs bg-rose-950 text-rose-400 px-3 py-1.5 rounded-lg border border-rose-800 font-bold font-mono">
+          Authorized Dispatch
+        </span>
+      </div>
+
+      <form id="alert-form" onsubmit="handleAlertSubmit(event)" class="space-y-4 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Target Location / Sector</label>
+            <input type="text" id="alt-location" value="Tamhini Ghat Valley (Sector 4)" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-rose-500 font-sans" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Alert Severity Level</label>
+            <select id="alt-severity" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-rose-500">
+              <option value="critical">CRITICAL (Immediate Action & Preparedness)</option>
+              <option value="high" selected>HIGH (Severe Weather & Ground Movement)</option>
+              <option value="moderate">MODERATE (Monitoring Advisory)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Alert Headline Title</label>
+          <input type="text" id="alt-title" value="CRITICAL: Debris Flow Warning — Tamhini Ghat Route" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-rose-500 font-sans" />
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Citizen & Responder Advisory Message</label>
+          <textarea id="alt-msg" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-rose-500">EMERGENCY ALERT: Severe slope tension cracks and heavy rainfall detected. Avoid unnecessary transit along SH-60. Follow district emergency directives.</textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Notification Channels</label>
+            <select id="alt-channel" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200">
+              <option value="both">Multi-Channel (Twilio SMS + Firebase Push)</option>
+              <option value="sms">SMS Only (Twilio Gateway)</option>
+              <option value="push">Push Notification Only (Firebase FCM)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Recipient Groups</label>
+            <select id="alt-groups" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200">
+              <option value="all">All Stakeholders (Citizens, Authorities, Medical, Responders)</option>
+              <option value="responders">Emergency Responders & District Authorities Only</option>
+              <option value="citizens">Local Citizens in Geofence Only</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 font-bold text-white rounded-xl shadow-lg shadow-rose-600/30 transition text-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-satellite-dish"></i> Dispatch Emergency Broadcast
+        </button>
+      </form>
+
+      <div id="alert-feedback" class="hidden p-4 rounded-xl text-xs font-semibold"></div>
+    </div>
+  </main>
+
+  <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    <p>GeoSentry &copy; 2026. Production Landslide Early Warning & Risk Prioritization System.</p>
+  </footer>
+
+  <script>
+    let currentRoleView = 'authority';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchAlerts();
+      // Auto refresh alerts every 20 seconds
+      setInterval(fetchAlerts, 20000);
+    });
+
+    function setRoleView(role) {
+      currentRoleView = role;
+      
+      const roles = ['authority', 'medical', 'higher_official', 'citizen'];
+      roles.forEach(r => {
+        const btn = document.getElementById('btn-role-' + (r === 'higher_official' ? 'higher' : r));
+        if (btn) {
+          if (r === role) {
+            btn.className = 'px-3 py-1.5 rounded-lg font-bold bg-slate-800 text-slate-200 transition';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition';
+          }
+        }
+      });
+
+      const dispatchSec = document.getElementById('dispatch-form-section');
+      if (role === 'citizen') {
+        dispatchSec.classList.add('hidden');
+      } else {
+        dispatchSec.classList.remove('hidden');
+      }
+
+      fetchAlerts();
+    }
+
+    async function fetchAlerts() {
+      const sev = document.getElementById('severity-filter').value;
+      try {
+        const resp = await fetch(`/alerts?role=${currentRoleView}&severity=${sev}`);
+        if (!resp.ok) throw new Error("Failed to fetch alerts");
+        const alerts = await resp.json();
+        renderAlerts(alerts);
+      } catch (err) {
+        console.error("Alert fetch error", err);
+      }
+    }
+
+    function renderAlerts(alerts) {
+      const container = document.getElementById('alerts-container');
+      document.getElementById('active-alert-count').innerText = `${alerts.length} Active`;
+
+      if (alerts.length === 0) {
+        container.innerHTML = `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-400 text-xs">
+            <i class="fa-solid fa-shield-check text-emerald-400 text-2xl mb-2"></i>
+            <p class="font-bold text-slate-200">No active emergency alerts for this filter.</p>
+            <p class="text-[11px] text-slate-500">All monitored landslide sectors currently within stable parameters.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = alerts.map(a => {
+        const isCritical = a.severity === 'critical';
+        const sevColor = isCritical ? 'rose' : (a.severity === 'high' ? 'orange' : 'amber');
+        const statusBadge = a.status === 'new' 
+          ? '<span class="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[10px] font-bold font-mono">NEW INCIDENT</span>'
+          : (a.status === 'acknowledged'
+            ? '<span class="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/40 text-[10px] font-bold font-mono">ACKNOWLEDGED</span>'
+            : (a.status === 'in_progress'
+              ? '<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold font-mono">IN PROGRESS</span>'
+              : '<span class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-bold font-mono">RESOLVED</span>'));
+
+        const escalationBadge = a.escalated 
+          ? '<span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] font-bold font-mono"><i class="fa-solid fa-arrow-trend-up mr-1"></i> ESCALATED TO SDMA</span>'
+          : '';
+
+        // Role-customized content
+        if (currentRoleView === 'citizen') {
+          return `
+            <div class="bg-slate-900 border border-${sevColor}-800/60 rounded-2xl p-5 shadow-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-3 py-1 rounded-full bg-${sevColor}-600/20 text-${sevColor}-400 border border-${sevColor}-500/40 text-xs font-black uppercase">
+                  ${a.severity.toUpperCase()} RISK ADVISORY
+                </span>
+                <span class="text-slate-400 text-xs">${a.location_name}</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-100">${a.title}</h3>
+              <p class="text-xs text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800">${a.message}</p>
+              <div class="text-xs text-rose-300 font-bold bg-rose-950/30 p-2.5 rounded-xl border border-rose-900/50">
+                <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> ${a.recommended_action}
+              </div>
+            </div>
+          `;
+        }
+
+        // Authority, Medical, and Higher Official Full Management View
+        return `
+          <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 shadow-xl space-y-4 transition">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-3 py-0.5 rounded-full bg-${sevColor}-600/20 text-${sevColor}-400 border border-${sevColor}-500/40 text-xs font-black uppercase font-mono">
+                  ${a.severity.toUpperCase()}
+                </span>
+                ${statusBadge}
+                ${escalationBadge}
+                <span class="text-xs font-bold text-slate-200 font-sans">${a.location_name}</span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono">
+                Probability: <b class="text-cyan-400">${a.probability_pct ? a.probability_pct.toFixed(1) + '%' : '92%'}</b> | Priority: <b class="text-rose-400">${a.priority_score ? a.priority_score.toFixed(1) + ' / 100' : '85 / 100'}</b>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-bold text-slate-100">${a.title}</h3>
+              <p class="text-xs text-slate-300 mt-1">${a.message}</p>
+            </div>
+
+            <!-- Context Details Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs">
+              <div>
+                <span class="text-slate-500 text-[10px] block uppercase font-bold">Impact & Lifelines</span>
+                <span class="text-slate-300 font-medium">${a.impact_summary || 'Arterial transit road corridor'}</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block uppercase font-bold">Targeted Recipient Groups</span>
+                <span class="text-emerald-400 font-mono text-[11px]">${a.recipient_groups.join(', ')}</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block uppercase font-bold">Delivery Status</span>
+                <span class="text-cyan-400 font-mono text-[11px]">${a.sms_sent} SMS &bull; ${a.push_sent} Push sent</span>
+              </div>
+            </div>
+
+            <!-- Audit Timeline Section -->
+            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 space-y-1.5">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block flex items-center gap-1">
+                <i class="fa-solid fa-timeline text-emerald-400"></i> Event Audit Trail
+              </span>
+              <div class="space-y-1 text-[11px]">
+                ${(a.timeline || []).map(t => `
+                  <div class="flex items-center gap-2 text-slate-300">
+                    <span class="font-mono text-slate-500">${t.time}</span>
+                    <span class="text-slate-400">&bull;</span>
+                    <span>${t.event}</span>
+                    <span class="text-slate-500 italic text-[10px]">(${t.actor})</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Role Actions Bar -->
+            <div class="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-800 text-xs font-sans">
+              <div class="text-[11px] text-slate-400">
+                ${a.acknowledged_by ? `<i class="fa-solid fa-check text-emerald-400 mr-1"></i> Acknowledged by <b>${a.acknowledged_by}</b>` : '<span class="text-amber-400"><i class="fa-solid fa-clock mr-1"></i> Awaiting Stakeholder Acknowledgement</span>'}
+              </div>
+
+              <div class="flex items-center gap-2 flex-wrap">
+                ${!a.acknowledged_by ? `
+                  <button onclick="handleAcknowledge(${a.id})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition shadow-sm flex items-center gap-1">
+                    <i class="fa-solid fa-check"></i> Acknowledge
+                  </button>
+                ` : ''}
+
+                ${a.status !== 'in_progress' && a.status !== 'resolved' ? `
+                  <button onclick="handleStartResponse(${a.id})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition shadow-sm flex items-center gap-1">
+                    <i class="fa-solid fa-truck-fast"></i> Start Response
+                  </button>
+                ` : ''}
+
+                ${!a.escalated && a.severity === 'critical' ? `
+                  <button onclick="handleEscalate(${a.id})" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold transition shadow-sm flex items-center gap-1">
+                    <i class="fa-solid fa-arrow-trend-up"></i> Escalate to SDMA
+                  </button>
+                ` : ''}
+
+                ${a.status !== 'resolved' ? `
+                  <button onclick="handleResolve(${a.id})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-bold transition border border-slate-700">
+                    <i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Resolve
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handleAcknowledge(alertId) {
+      try {
+        const resp = await fetch(`/alerts/${alertId}/acknowledge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ acknowledged_by: "District Disaster Officer", notes: "Emergency cell active." })
+        });
+        if (resp.ok) {
+          fetchAlerts();
+        }
+      } catch (err) {
+        console.error("Ack error", err);
+      }
+    }
+
+    async function handleStartResponse(alertId) {
+      try {
+        const resp = await fetch(`/alerts/${alertId}/response`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: "in_progress", response_action: "Field team & NDRF stationed on site." })
+        });
+        if (resp.ok) {
+          fetchAlerts();
+        }
+      } catch (err) {
+        console.error("Response status error", err);
+      }
+    }
+
+    async function handleEscalate(alertId) {
+      try {
+        const resp = await fetch(`/alerts/${alertId}/escalate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ escalated_to: "State Disaster Management Authority (SDMA)", escalation_reason: "High rainfall escalation across hill sector." })
+        });
+        if (resp.ok) {
+          fetchAlerts();
+        }
+      } catch (err) {
+        console.error("Escalate error", err);
+      }
+    }
+
+    async function handleResolve(alertId) {
+      try {
+        const resp = await fetch(`/alerts/${alertId}/response`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: "resolved", response_action: "Slope stabilized; weather cleared." })
+        });
+        if (resp.ok) {
+          fetchAlerts();
+        }
+      } catch (err) {
+        console.error("Resolve error", err);
+      }
+    }
+
+    async function handleAlertSubmit(e) {
+      e.preventDefault();
+      const payload = {
+        location_name: document.getElementById('alt-location').value,
+        severity: document.getElementById('alt-severity').value,
+        title: document.getElementById('alt-title').value,
+        message: document.getElementById('alt-msg').value,
+        channel: document.getElementById('alt-channel').value,
+        recipient_groups: ["citizens", "authorities", "medical", "higher_officials"]
+      };
+
+      try {
+        const resp = await fetch('/alerts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+
+        const fb = document.getElementById('alert-feedback');
+        fb.className = 'p-4 rounded-xl text-xs font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800 space-y-1';
+        fb.innerHTML = `
+          <div class="flex items-center gap-2 font-bold text-sm text-emerald-200">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i> Emergency Alert #${data.id} Dispatched Successfully!
+          </div>
+          <div class="text-slate-300">
+            Severity: <b>${data.severity.toUpperCase()}</b> | Location: <b>${data.location_name}</b> | Recipient Groups: <b>${data.recipient_groups.join(', ')}</b>
+          </div>
+        `;
+        fb.classList.remove('hidden');
+        fetchAlerts();
+      } catch (err) {
+        console.error("Dispatch error", err);
+      }
+    }
+  </script>
+</body>
+</html>

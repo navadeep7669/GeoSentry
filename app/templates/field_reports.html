@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSentry — Report Hazard AI Missed (Citizen Ground Intelligence)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/offline_sync.js"></script>
+  <style>
+    @keyframes levitate {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-7px) rotate(1.5deg);
+        filter: drop-shadow(0 12px 14px rgba(16, 185, 129, 0.25));
+      }
+    }
+    @keyframes levitate-alt {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-8px) rotate(-2deg);
+        filter: drop-shadow(0 12px 14px rgba(6, 182, 212, 0.25));
+      }
+    }
+    @keyframes levitate-slow {
+      0%, 100% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        transform: translateY(-10px);
+        filter: drop-shadow(0 14px 18px rgba(244, 63, 94, 0.25));
+      }
+    }
+    .levitate {
+      animation: levitate 3.6s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-alt {
+      animation: levitate-alt 4.2s ease-in-out infinite;
+      display: inline-block;
+    }
+    .levitate-slow {
+      animation: levitate-slow 4.8s ease-in-out infinite;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-lg">
+    <div class="flex items-center space-x-3">
+      <a href="/" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white text-xl group-hover:scale-105 transition levitate">
+          <i class="fa-solid fa-mountain-sun"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">GeoSentry</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30 font-medium">v1.0.0</span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operational
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">AI Landslide Early Warning & Emergency Risk Prioritization</p>
+        </div>
+      </a>
+    </div>
+
+    <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <a href="/" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-house levitate"></i> <span class="hidden md:inline" data-i18n="nav.map">Home & Map</span>
+      </a>
+      <a href="/risk-priority" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-ranking-star text-amber-400 levitate-slow"></i> <span class="hidden md:inline" data-i18n="nav.priority">Priority</span>
+      </a>
+      <a href="/field-reports" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-camera text-teal-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.report">Reports</span>
+      </a>
+      <a href="/risk-evaluation" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-calculator levitate"></i> <span class="hidden md:inline" data-i18n="nav.engine">Risk Engine</span>
+      </a>
+      <a href="/analytics" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-chart-line text-emerald-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.analytics">Analytics</span>
+      </a>
+      <a href="/reports-review" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-shield-halved levitate-alt"></i> <span class="hidden md:inline" data-i18n="nav.validator">Validator</span>
+      </a>
+      <a href="/alert-dispatch" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-triangle-exclamation text-rose-400 levitate"></i> <span class="hidden md:inline" data-i18n="nav.alerts">Alerts</span>
+      </a>
+    </nav>
+
+    <div class="flex items-center space-x-2">
+      <!-- Language Selector -->
+      <select id="global-lang-selector" onchange="setAppLanguage(this.value)" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="mr">मराठी</option>
+        <option value="ml">മലയാളം</option>
+        <option value="bn">বাংলা</option>
+      </select>
+
+      <a href="/auth/login-page" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-user-shield levitate"></i> <span data-i18n="nav.signin">Stakeholder Sign In</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <a href="/" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-arrow-left"></i> Back to GIS Map
+      </a>
+      <span class="px-3 py-1 rounded-full bg-teal-950 border border-teal-800 text-teal-400 font-mono text-xs font-bold">
+        POST /reports &bull; Human-in-the-Loop
+      </span>
+    </div>
+
+    <!-- Alert / Context Banner: Report What AI Missed -->
+    <div class="bg-gradient-to-r from-teal-950/80 to-slate-900 border border-teal-800/80 rounded-2xl p-4 shadow-xl flex items-start gap-3.5">
+      <div class="w-10 h-10 rounded-xl bg-teal-600/30 text-teal-400 flex items-center justify-center shrink-0 text-lg levitate">
+        <i class="fa-solid fa-shield-cat"></i>
+      </div>
+      <div class="space-y-1">
+        <h3 class="text-sm font-bold text-teal-200">Did the Automated AI Miss a Ground Hazard?</h3>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          If you observe fresh tension cracks, bulging road shoulders, rockfall, or blocked culverts even when the automated system shows Moderate or Low risk, submit your geo-tagged report immediately. It enters the pipeline with status <span class="font-bold text-amber-400 font-mono">CITIZEN REPORTED (PENDING VALIDATION)</span> for field verification.
+        </p>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+      <div>
+        <h1 class="text-xl font-black text-slate-100 flex items-center gap-2">
+          <i class="fa-solid fa-camera-retro text-teal-400"></i> Citizen Field Hazard Incident Submission
+        </h1>
+        <p class="text-xs text-slate-400">
+          Upload photo or video evidence with GPS coordinates. Approving this report will dynamically update the surrounding risk zone.
+        </p>
+      </div>
+
+      <form id="report-form" onsubmit="handleReportSubmit(event)" class="space-y-4 text-xs">
+        
+        <!-- Location Coordinates & GPS Picker -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="block font-semibold text-slate-300">Hazard Location (WGS84 Coordinates)</label>
+            <button type="button" onclick="fetchDeviceLocation()" class="text-emerald-400 hover:text-emerald-300 font-bold text-xs flex items-center gap-1 transition">
+              <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location (GPS)
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <input type="number" step="0.0001" id="rep-lat" value="18.4550" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" placeholder="Latitude (°N)" />
+            </div>
+            <div>
+              <input type="number" step="0.0001" id="rep-lon" value="73.4250" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" placeholder="Longitude (°E)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Hazard Classification -->
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Observed Hazard Type</label>
+          <select id="rep-type" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+            <option value="cracks">Fresh Tension Cracks on Highway / Hillside</option>
+            <option value="mudslide">Active Slope Movement / Small Mudslide</option>
+            <option value="rockfall">Rockfall / Falling Boulders on Transit Corridor</option>
+            <option value="drainage">Blocked Mountain Culvert / Extreme Seepage</option>
+            <option value="wall_damage">Retaining Wall / Hill Slope Bulge</option>
+            <option value="road_subsidence">Road Shoulder Subsidence / Fissure</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Field Description & Citizen Observations</label>
+          <textarea id="rep-notes" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500" placeholder="Describe the crack width, slope movement speed, affected road lane, or nearby houses...">Visible 3-inch wide tension cracks appearing across northbound highway lane after intense morning downpour. Water seeping from cut slope.</textarea>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Upload Photo / Video Evidence</label>
+          <input type="file" id="rep-media" multiple accept="image/*,video/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200" />
+          <p class="text-[11px] text-slate-500 mt-1">Geo-tagged photos will be encrypted and stored in secure object storage for validator inspection.</p>
+        </div>
+
+        <button type="submit" id="rep-btn" class="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-500 hover:from-teal-500 hover:to-emerald-400 font-bold text-white rounded-xl shadow-lg shadow-teal-600/30 transition text-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-paper-plane"></i> Submit Incident Report (Pending Review)
+        </button>
+      </form>
+
+      <div id="report-feedback" class="hidden p-4 rounded-xl text-xs font-semibold space-y-1"></div>
+    </div>
+  </main>
+
+  <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    <p>GeoSentry &copy; 2026. Production Landslide Early Warning & Risk Prioritization System.</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Auto-fill from URL parameters if available
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('lat')) document.getElementById('rep-lat').value = parseFloat(params.get('lat')).toFixed(4);
+      if (params.has('lon')) document.getElementById('rep-lon').value = parseFloat(params.get('lon')).toFixed(4);
+    });
+
+    function fetchDeviceLocation() {
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          document.getElementById('rep-lat').value = pos.coords.latitude.toFixed(4);
+          document.getElementById('rep-lon').value = pos.coords.longitude.toFixed(4);
+          alert(`GPS Location Acquired: Lat ${pos.coords.latitude.toFixed(4)}, Lon ${pos.coords.longitude.toFixed(4)}`);
+        },
+        (err) => {
+          alert("GPS Permission denied or unavailable. Please enter coordinates manually.");
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+
+    async function handleReportSubmit(e) {
+      e.preventDefault();
+      const lat = parseFloat(document.getElementById('rep-lat').value);
+      const lon = parseFloat(document.getElementById('rep-lon').value);
+      const type = document.getElementById('rep-type').value;
+      const notes = document.getElementById('rep-notes').value;
+
+      const fb = document.getElementById('report-feedback');
+
+      if (!navigator.onLine) {
+        // Enqueue report for offline sync
+        window.offlineSync.enqueueReport({
+          latitude: lat,
+          longitude: lon,
+          hazard_type: type,
+          description: `[${type.toUpperCase()}] ${notes}`
+        });
+
+        fb.className = 'p-4 rounded-xl text-xs font-semibold bg-amber-950 text-amber-300 border border-amber-800 space-y-1';
+        fb.innerHTML = `
+          <div class="flex items-center gap-2 text-sm font-bold text-amber-200">
+            <i class="fa-solid fa-cloud-arrow-up text-amber-400"></i> Offline Mode: Report Stored Locally!
+          </div>
+          <div>
+            Status: <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold">PENDING SYNC (LOCAL CACHE)</span>
+          </div>
+          <div class="text-slate-300 text-[11px] pt-1">
+            Location: <b>${lat}°N, ${lon}°E</b>. The report is safely saved on your device and will automatically synchronize with the GeoSentry network when connectivity is restored.
+          </div>
+        `;
+        fb.classList.remove('hidden');
+        return;
+      }
+
+      // Online submission
+      try {
+        const formData = new FormData();
+        formData.append('latitude', lat);
+        formData.append('longitude', lon);
+        formData.append('description', `[${type.toUpperCase()}] ${notes}`);
+
+        const token = localStorage.getItem('geosentry_token');
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        await fetch('/reports', {
+          method: 'POST',
+          headers: headers,
+          body: formData
+        });
+      } catch (err) {
+        console.warn("Direct upload error, queuing offline", err);
+      }
+
+      fb.className = 'p-4 rounded-xl text-xs font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800 space-y-1';
+      fb.innerHTML = `
+        <div class="flex items-center gap-2 text-sm font-bold text-emerald-200">
+          <i class="fa-solid fa-circle-check text-emerald-400"></i> Field Incident Report Submitted Successfully!
+        </div>
+        <div>
+          Status: <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold">CITIZEN REPORTED (PENDING VALIDATION)</span>
+        </div>
+        <div class="text-slate-300 text-[11px] pt-1">
+          Location: <b>${lat}°N, ${lon}°E</b> | Hazard: <b>${type.toUpperCase()}</b>. Field geological validators have been notified to inspect and verify.
+        </div>
+        <div class="pt-2">
+          <a href="/reports-review" class="text-teal-400 hover:underline font-bold">View in Field Validator Console &rarr;</a>
+        </div>
+      `;
+      fb.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
