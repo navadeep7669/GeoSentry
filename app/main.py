@@ -166,6 +166,15 @@ async def health_check():
     }
 
 
+@app.get("/api/health", tags=["System"])
+async def api_health_check():
+    return {
+        "status": "ok",
+        "service": "geosentry-api",
+    }
+
+
+
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from app.services.chat_service import chat_service

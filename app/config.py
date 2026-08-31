@@ -73,9 +73,22 @@ class Settings(BaseSettings):
 
     # ── Satellite / Earth Observation (optional, future) ─────────────────────
     # Set GEE_PROJECT + GEE_SERVICE_ACCOUNT_JSON to enable Earth Engine ingestion.
+    # (defaults omitted)
     GEE_PROJECT: str = ""
     GEE_SERVICE_ACCOUNT_JSON: str = ""
     SATELLITE_PROVIDER: str = "external"  # "gee" | "sentinel" | "external"
+
+    def __init__(self, **values):
+        super().__init__(**values)
+        if self.DATABASE_URL.startswith("postgres://"):
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif self.DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in self.DATABASE_URL:
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+        if self.SYNC_DATABASE_URL.startswith("postgres://"):
+            self.SYNC_DATABASE_URL = self.SYNC_DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+        elif self.SYNC_DATABASE_URL.startswith("postgresql://") and "+psycopg2" not in self.SYNC_DATABASE_URL:
+            self.SYNC_DATABASE_URL = self.SYNC_DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 
 settings = Settings()
