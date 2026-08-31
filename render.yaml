@@ -9,7 +9,66 @@ services:
         value: 3.12.0
       - key: PORT
         value: 8000
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
       - key: GEMINI_API_KEY
         sync: false
       - key: OPENWEATHER_API_KEY
+        sync: false
+
+  - type: worker
+    name: geosentry-worker-risk
+    env: python
+    buildCommand: pip install -r requirements-dev.txt
+    startCommand: celery -A app.tasks.celery_app worker -Q risk -c 4 --loglevel=info
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DATABASE_URL
+        sync: false
+      - key: SYNC_DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+
+  - type: worker
+    name: geosentry-worker-alerts
+    env: python
+    buildCommand: pip install -r requirements-dev.txt
+    startCommand: celery -A app.tasks.celery_app worker -Q alerts -c 2 --loglevel=info
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DATABASE_URL
+        sync: false
+      - key: SYNC_DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM_NUMBER
+        sync: false
+
+  - type: worker
+    name: geosentry-scheduler
+    env: python
+    buildCommand: pip install -r requirements-dev.txt
+    startCommand: celery -A app.tasks.celery_app beat --loglevel=info
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DATABASE_URL
+        sync: false
+      - key: SYNC_DATABASE_URL
+        sync: false
+      - key: REDIS_URL
         sync: false
