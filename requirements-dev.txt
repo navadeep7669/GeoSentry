@@ -1,0 +1,9 @@
+# Development & ML training requirements for GeoSentry
+-r requirements.txt
+
+# ML & Data Libraries (unzipped size is too large for Vercel, run locally/separately)
+xgboost==2.0.3
+scikit-learn==1.5.0
+pandas==2.2.2
+shapely==2.0.4
+
